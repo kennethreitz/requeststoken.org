@@ -88,7 +88,7 @@ class MapClient:
         return item
 
 
-def build(routes, env=None, clock=None, disk=None):
+def build(routes, env=None, clock=None, disk=None, environ=None):
     client = MapClient(routes)
     services = Services(
         client=client,
@@ -97,7 +97,7 @@ def build(routes, env=None, clock=None, disk=None):
         env={} if env is None else env,
         disk=disk,
     )
-    return create_app(services), client
+    return create_app(services, environ=environ), client
 
 
 def test_token_endpoint_uses_first_pair_only():
@@ -262,3 +262,75 @@ def test_homepage_still_renders_when_upstreams_fail():
     assert CONTRACT in response.text
     assert "temporarily unavailable" in response.text
     assert "not financial advice" in response.text
+
+
+_UMAMI_ID = "11111111-1111-4111-8111-111111111111"
+_UMAMI_SCRIPT = "https://analytics.kennethreitz.org/script.js"
+_CSP_CLOSED = (
+    "default-src 'self'; "
+    "img-src 'self' data:; "
+    "style-src 'self'; "
+    "font-src 'self'; "
+    "script-src 'self'; "
+    "connect-src 'self'; "
+    "base-uri 'self'; "
+    "form-action 'none'; "
+    "frame-ancestors 'none'"
+)
+
+
+def _homepage(environ):
+    api, _client = build({}, environ=environ)
+    response = api.requests.get("/")
+    assert response.status_code == 200
+    return response
+
+
+def test_homepage_omits_umami_until_a_website_id_is_set():
+    response = _homepage({})
+    assert "data-website-id" not in response.text
+    assert "analytics.kennethreitz.org" not in response.text
+    assert response.headers["content-security-policy"] == _CSP_CLOSED
+
+
+def test_homepage_loads_kenneths_umami_when_the_website_id_is_set():
+    response = _homepage({"UMAMI_WEBSITE_ID": _UMAMI_ID})
+    tag = (
+        f'<script defer src="{_UMAMI_SCRIPT}" '
+        f'data-website-id="{_UMAMI_ID}"></script>'
+    )
+    head, _, body = response.text.partition("</head>")
+    assert tag in head
+    assert "data-website-id" not in body
+    assert '<h1><span class="dollar">$</span>requests</h1>' in body
+    policy = response.headers["content-security-policy"]
+    assert "script-src 'self' https://analytics.kennethreitz.org;" in policy
+    assert "connect-src 'self' https://analytics.kennethreitz.org;" in policy
+
+
+def test_umami_script_url_can_be_overridden():
+    script = "https://stats.example.test:8443/umami/script.js"
+    response = _homepage({
+        "UMAMI_WEBSITE_ID": _UMAMI_ID,
+        "UMAMI_SCRIPT_URL": script,
+    })
+    tag = f'<script defer src="{script}" data-website-id="{_UMAMI_ID}"></script>'
+    assert tag in response.text.partition("</head>")[0]
+    policy = response.headers["content-security-policy"]
+    assert "https://stats.example.test:8443" in policy
+    assert "analytics.kennethreitz.org" not in policy
+
+
+def test_umami_tag_is_omitted_for_unusable_settings():
+    cases = (
+        {"UMAMI_WEBSITE_ID": "not-a-uuid"},
+        {"UMAMI_WEBSITE_ID": "  "},
+        {"UMAMI_WEBSITE_ID": _UMAMI_ID, "UMAMI_SCRIPT_URL": "javascript:alert(1)"},
+        {"UMAMI_WEBSITE_ID": _UMAMI_ID, "UMAMI_SCRIPT_URL": "https://evil.test/not-a-script"},
+        {"UMAMI_WEBSITE_ID": '<script>alert(1)</script>'},
+    )
+    for environ in cases:
+        response = _homepage(environ)
+        assert "data-website-id" not in response.text
+        assert "<script defer" not in response.text
+        assert response.headers["content-security-policy"] == _CSP_CLOSED

@@ -13,6 +13,9 @@
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://requeststoken.org/">
   <link rel="stylesheet" href="/static/css/site.css">
+  {% if umami_website_id %}
+  <script defer src="{{ umami_script_url }}" data-website-id="{{ umami_website_id }}"></script>
+  {% endif %}
 </head>
 <body id="top">
   <a class="skip" href="#content">Skip to content</a>
