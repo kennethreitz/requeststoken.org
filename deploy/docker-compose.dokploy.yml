@@ -5,5 +5,7 @@ services:
     restart: unless-stopped
     environment:
       PORT: "5042"
+      # Create requeststoken.org in https://analytics.kennethreitz.org, then set
+      # UMAMI_WEBSITE_ID here. Leave UMAMI_SCRIPT_URL unset.
     expose:
       - "5042"

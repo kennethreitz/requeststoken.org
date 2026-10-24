@@ -23,6 +23,18 @@ Optional environment variables, in a `.env` file (loaded if present, without ove
 | --- | --- |
 | `PORT` | Port to bind. Defaults to `5042`. |
 | `LOG_LEVEL` | Python log level. Defaults to `INFO`. |
+| `UMAMI_WEBSITE_ID` | Website ID from the Umami dashboard. Unset means the tracker is not rendered. |
+| `UMAMI_SCRIPT_URL` | Tracker script URL. Defaults to `https://analytics.kennethreitz.org/script.js`. |
+
+## Analytics
+
+Page views go to the Umami instance already used by kennethreitz.org and Kenneth’s other sites: `https://analytics.kennethreitz.org`. There is no website ID for requeststoken.org in this repo. Create the site in that dashboard, set `UMAMI_WEBSITE_ID` where this app is deployed, and `templates/index.html` renders this in `<head>`:
+
+```html
+<script defer src="https://analytics.kennethreitz.org/script.js" data-website-id="…"></script>
+```
+
+The tag is omitted when `UMAMI_WEBSITE_ID` is unset or not a UUID. `UMAMI_SCRIPT_URL` replaces the script URL; the content security policy allows that script’s origin only while the tag is rendered. The tracker sends to `/api/send` on the same origin.
 
 ## Download stats
 
