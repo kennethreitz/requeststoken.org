@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Requests — download history and project usage</title>
+  <meta name="description" content="Source-reported Requests download history and 120 public projects with explanations and pinned source evidence.">
+  <meta name="theme-color" content="#101410">
+  <link rel="canonical" href="https://requeststoken.org/observatory">
+  <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/static/css/site.css">
+  <link rel="stylesheet" href="/static/css/observatory.css">
+  <script type="module" src="/static/js/observatory.mjs"></script>
+</head>
+<body class="observatory" id="top">
+  <a class="skip" href="#content">Skip to content</a>
+  <header class="site-header"><div class="wrap bar">
+    <a class="brand" href="/">requests</a>
+    <nav aria-label="Observatory"><a href="#downloads">Downloads</a><a href="#history">History</a><a href="#adoption">Project usage</a><a href="#methodology">Sources</a></nav>
+  </div></header>
+  <main id="content" class="wrap">
+    <section class="obs-hero" aria-labelledby="obs-title">
+      <div><p class="kicker">HTTP for Humans</p><h1 id="obs-title">Requests</h1>
+        <p class="lede">Download history. Public code evidence.</p>
+        <p class="obs-muted">Explore the library’s recorded downloads and how public projects use it. Every usage entry links to the source.</p>
+      </div>
+      <img src="/static/img/requests-caduceus.webp" width="180" height="180" alt="Requests: HTTP for Humans logo">
+    </section>
+
+    <section id="downloads" class="obs-section" aria-labelledby="downloads-title">
+      <div class="obs-heading"><div><p class="index">01 — Download records</p><h2 id="downloads-title">The latest reported counts</h2></div><button id="refresh-counts" type="button">Check for updates</button></div>
+      <p class="obs-source-note">Daily source · delayed updates. A realtime event feed is not connected.</p>
+      <div class="obs-counters">
+        {% for period, label in [('day','Today'),('week','This week'),('month','This month'),('lifetime','Historical total')] %}
+        <article class="obs-counter{% if period == 'lifetime' %} obs-counter-total{% endif %}"><h3>{{ label }}</h3>
+          <p class="obs-number" id="count-{{ period }}">{% if period == 'lifetime' %}{{ '{:,}'.format(downloads.snapshot.rawTotal) }}{% else %}Pending{% endif %}</p>
+          {% if period != 'lifetime' %}<p class="obs-muted">Next period <span id="reset-{{ period }}">—</span> <span class="obs-utc">UTC</span></p>
+          {% else %}<p class="obs-muted" id="total-coverage">From {{ downloads.snapshot.firstDate }} · incomplete coverage</p>{% endif %}
+        </article>
+        {% endfor %}
+      </div>
+      <p id="source-status" class="obs-muted" role="status">{{ downloads.message or 'Source snapshot available.' }} Data through {{ downloads.snapshot.latestDate }} UTC.</p>
+      <p class="obs-fine">Calendar day, Monday-based week and calendar month, in UTC. A period without reported data stays Pending. These are download records, not unique users.</p>
+      <noscript><p>Enable JavaScript for calendar counts, charts, filtering and interactive details. The historical total above is from the saved snapshot. <a href="/static/observatory/download-snapshot.json">Download the dated snapshot</a>.</p></noscript>
+    </section>
+
+    <section id="history" class="obs-section" aria-labelledby="history-title">
+      <div class="obs-heading"><div><p class="index">02 — Archive</p><h2 id="history-title">Every reported date</h2></div><button type="button" id="export-history">Export filtered CSV</button></div>
+      <div class="obs-controls">
+        <label>Group by<select id="history-period"><option value="day">Day</option><option value="week">Week</option><option value="month">Month</option></select></label>
+        <label>Range<select id="history-range"><option value="30">Last 30 days</option><option value="90">Last 90 days</option><option value="365">Last year</option><option value="all">All dates</option><option value="custom">Custom dates</option></select></label>
+        <label>From<input id="history-from" type="date"></label><label>To<input id="history-to" type="date"></label>
+      </div>
+      <p id="history-error" class="obs-warning" role="status" hidden></p>
+      <figure class="obs-chart"><svg id="history-chart" viewBox="0 0 1000 240" role="img" aria-labelledby="chart-title chart-description"><title id="chart-title">Recorded Requests downloads</title><desc id="chart-description">Missing dates are gaps. Exact values appear in the history table.</desc></svg><figcaption class="obs-fine">Source-reported counts. Gaps stay unknown; open or incomplete periods are labeled in the table.</figcaption></figure>
+      <div class="obs-table-scroll" tabindex="0" aria-label="Download history table"><table class="obs-table"><caption class="visually-hidden">Filtered download history in UTC</caption><thead><tr><th scope="col">Period start</th><th scope="col">Period end</th><th scope="col">Downloads</th><th scope="col">Coverage</th><th scope="col">Status</th></tr></thead><tbody id="history-body"></tbody></table></div>
+      <div class="obs-pagination"><button type="button" id="history-prev">Previous</button><span id="history-page" role="status"></span><button type="button" id="history-next">Next</button></div>
+    </section>
+
+    <section id="adoption" class="obs-section" aria-labelledby="adoption-title">
+      <p class="index">03 — Public project evidence</p><h2 id="adoption-title">Where Requests shows up</h2>
+      <p class="obs-muted">{{ adoption.entries|length }} reviewed projects · {{ organization_count }} organization and community labels. {{ adoption.coverage }}</p>
+      <div class="obs-heading"><h3>Historical SDK usage</h3><span class="obs-fine">Separate from the 120-project directory</span></div>
+      <div class="obs-historical">
+      {% for item in adoption.historicalSdkUsage %}
+        <article class="obs-panel"><span class="obs-badge">Historical · v{{ item.version }}</span><h3>{{ item.organization }} · {{ item.project }}</h3><p>{{ item.title }}</p><p>{{ item.summary }}</p><code>{{ item.evidenceSnippet }}</code>
+          <details><summary>How this version used Requests</summary><p>{{ item.details }}</p><p class="obs-warning">{{ item.scopeNote }}</p><p><a href="{{ item.evidenceUrl }}" target="_blank" rel="noopener noreferrer">Session source</a> · <a href="{{ item.requestEvidenceUrl }}" target="_blank" rel="noopener noreferrer">HTTP call source</a> · <a href="{{ item.migrationUrl }}" target="_blank" rel="noopener noreferrer">{{ item.migrationLabel }}</a></p></details>
+        </article>
+      {% endfor %}
+      </div>
+      <div class="obs-controls obs-directory-controls">
+        <label class="obs-search">Search projects<input type="search" id="project-search" placeholder="Organization, project or what it uses Requests for…"></label>
+        <label>Sector<select id="project-sector"><option value="all">All sectors</option><option value="technology">Technology</option><option value="crypto">Crypto / Web3</option></select></label>
+        <label>Category<select id="project-category"><option value="all">All categories</option>{% for category in categories %}<option value="{{ category }}">{{ category }}</option>{% endfor %}</select></label>
+        <label>Sort<select id="project-sort"><option value="organization">Organization</option><option value="project">Project</option></select></label>
+      </div>
+      <div class="obs-heading"><p id="project-count" class="obs-muted" role="status">{{ adoption.entries|length }} reviewed projects</p><a href="/static/observatory/adoption-evidence.json" download>Download evidence JSON</a></div>
+      <div id="project-grid" class="obs-project-grid"></div>
+      <noscript><ul>{% for entry in adoption.entries %}<li><a href="{{ entry.evidenceUrl }}">{{ entry.organization }} — {{ entry.project }}</a>: {{ entry.usageDetails.explanation }} {{ entry.usageDetails.scopeNote }}</li>{% endfor %}</ul></noscript>
+      <div class="obs-pagination"><button type="button" id="project-prev">Previous</button><span id="project-page"></span><button type="button" id="project-next">Next</button></div>
+    </section>
+
+    <section id="methodology" class="obs-section" aria-labelledby="methodology-title">
+      <p class="index">04 — Check the source</p><h2 id="methodology-title">What the numbers can tell us</h2>
+      <div class="obs-methodology"><div>
+        <p>Download counts come from the public ClickPy / ClickHouse replica of PyPI logs. The daily series uses its aggregate table; the historical baseline uses a raw-table count. They can differ.</p>
+        <p id="coverage-note" class="obs-warning"></p>
+        <p>The history starts in 2016, not at Requests’ first release. Missing days are not zero. Downloads can include automated builds and repeated or partial transfers; they do not identify a company running the library.</p>
+        <p>Counts update only when a new source snapshot arrives. The countdown marks the next UTC period. No per-second estimate is added to the totals.</p>
+        <p><a href="/static/observatory/download-proof-2026-10-25.zip" download>Download the 25 Oct 2026 audit</a> · <a href="https://docs.pypi.org/api/bigquery/" target="_blank" rel="noopener noreferrer">PyPI source documentation</a> · <a href="https://blog.pypi.org/posts/2026-08-31-download-counts/" target="_blank" rel="noopener noreferrer">Download-count definitions</a></p>
+      </div><div>
+        <p>Project entries are reviewed against public source code at a specific commit. SDKs, tests, examples, optional dependencies and production components keep their actual scope. Presence in a repository does not establish current company-wide deployment or endorsement of a token.</p>
+        <p>Refreshes are shared and attempted at most hourly on visits. Failed checks keep the last snapshot and wait ten minutes before retrying. Data freshness is shown separately from the time of the latest check.</p>
+        <details><summary>Reproduce the download queries</summary><div id="source-queries"></div></details>
+      </div></div>
+    </section>
+  </main>
+  <footer class="wrap obs-footer"><a href="/">Back to requeststoken.org</a><span>Requests · HTTP for Humans</span></footer>
+  <dialog id="project-dialog" aria-labelledby="project-dialog-title"><div class="obs-dialog-heading"><h2 id="project-dialog-title"></h2><button id="close-project" type="button" aria-label="Close project details">Close</button></div><div id="project-dialog-content"></div></dialog>
+  <script id="download-data" type="application/json">{{ downloads_json|safe }}</script>
+  <script id="adoption-data" type="application/json">{{ adoption_json|safe }}</script>
+</body>
+</html>

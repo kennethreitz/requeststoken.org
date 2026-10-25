@@ -18,6 +18,7 @@ from requeststoken.config import (
     ROOT,
 )
 from requeststoken.data import Services, unavailable_stats, unavailable_token
+from requeststoken.observatory import DownloadObservatory, adoption_manifest
 
 logger = logging.getLogger("requeststoken")
 
@@ -41,8 +42,9 @@ def safe_json(data) -> str:
     return text.replace("&", "\\u0026").replace("<", "\\u003c").replace(">", "\\u003e")
 
 
-def create_app(services: Services | None = None) -> responder.API:
+def create_app(services: Services | None = None, observatory: DownloadObservatory | None = None) -> responder.API:
     services = services or Services()
+    observatory = observatory or DownloadObservatory()
     api = responder.API(
         static_dir=str(ROOT / "static"),
         static_route="/static",
@@ -98,6 +100,23 @@ def create_app(services: Services | None = None) -> responder.API:
             unavailable_stats,
             "Download stats are temporarily unavailable.",
         )
+
+    @api.route("/observatory")
+    def observatory_page(req, resp):
+        downloads = observatory.read()
+        adoption = adoption_manifest()
+        resp.headers["Cache-Control"] = "no-store"
+        resp.render(
+            "observatory.html", downloads=downloads, adoption=adoption,
+            downloads_json=safe_json(downloads), adoption_json=safe_json(adoption),
+            categories=sorted({entry["category"] for entry in adoption["entries"]}),
+            organization_count=len({entry["organization"] for entry in adoption["entries"]}),
+        )
+
+    @api.route("/api/observatory")
+    def observatory_stats(req, resp):
+        resp.headers["Cache-Control"] = "no-store"
+        resp.media = observatory.read()
 
     return api
 
