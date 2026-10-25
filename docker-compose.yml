@@ -1,0 +1,35 @@
+# Local development only: `docker compose up --build`, then open http://127.0.0.1:5042
+# Production uses deploy/docker-compose.dokploy.yml; this file is not used there.
+services:
+  app:
+    build: .
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      PORT: "5042"
+      REDIS_URL: redis://redis:6379/0
+      REQUESTS_OBSERVATORY_REDIS_PREFIX: ${REQUESTS_OBSERVATORY_REDIS_PREFIX:-local}
+      REQUESTS_OBSERVATORY_REFRESH: ${REQUESTS_OBSERVATORY_REFRESH:-1}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+    ports:
+      - "127.0.0.1:${APP_PORT:-5042}:5042"
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+volumes:
+  redis-data:
