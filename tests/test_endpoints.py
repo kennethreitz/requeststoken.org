@@ -252,9 +252,13 @@ def test_homepage_renders_facts_figures_and_the_disclaimer():
     assert "official links" in text
     assert "TODO" not in text
     lowered = text.lower()
+    assert "Join the group chat" in text
+    assert "https://x.com/i/chat/group_join/g2113555281518977367/54IJSMh16G" in text
+    assert "Admins will never ask for keys, seed phrases, or funds." in text
     assert "connect wallet" not in lowered
     assert "walletconnect" not in lowered
-    assert "seed phrase" not in lowered
+    # Named only to say admins will not ask for one.
+    assert lowered.count("seed phrase") == 1
     assert "to the moon" not in lowered
     assert "guaranteed" not in lowered
     assert "https://pump.fun/coin/" + CONTRACT in text
@@ -287,11 +291,11 @@ def test_trust_strip_lock_card_and_timeline_markup():
 def test_section_anchors():
     import pathlib
     html = pathlib.Path("templates/index.html").read_text()
-    for anchor in ("hero", "rules", "intentions", "lock", "library", "heritage", "market", "disclaimer", "links"):
+    for anchor in ("hero", "rules", "chat", "intentions", "lock", "library", "heritage", "market", "disclaimer", "links"):
         assert html.count(f'id="{anchor}"') == 1, anchor
-    for anchor in ("rules", "intentions", "lock", "library", "heritage", "market", "disclaimer", "links"):
+    for anchor in ("rules", "chat", "intentions", "lock", "library", "heritage", "market", "disclaimer", "links"):
         assert f'<a class="anchor" href="#{anchor}"' in html, anchor
-    for nav in ("#intentions", "#library", "#market", "#disclaimer"):
+    for nav in ("#chat", "#intentions", "#library", "#market", "#disclaimer"):
         assert f'href="{nav}"' in html
     css = pathlib.Path("static/css/site.css").read_text()
     assert "scroll-margin-top" in css
@@ -304,7 +308,36 @@ def test_fomo_link():
     import pathlib
     html = pathlib.Path("templates/index.html").read_text()
     assert "Also trade and follow on" in html
-    assert html.count("{{ fomo_page }}") == 2
+    assert html.count("{{ fomo_page }}") == 3
+
+
+def test_group_chat_section():
+    import pathlib
+
+    from requeststoken.config import CHAT_JOIN, PRIMARY_LINKS
+
+    html = pathlib.Path("templates/index.html").read_text()
+    assert html.index('id="rules"') < html.index('id="chat"') < html.index('id="intentions"')
+    assert "Join the group chat" in html
+    assert 'class="join" href="{{ chat_join }}"' in html
+    assert "or DM" in html and "@kennethreitz42" in html
+    assert "About 20 members, and a moderator." in html
+    assert "circle of trust" in html
+    assert "That was also Kenneth’s open-source code of conduct before formal codes became standard." in html
+    assert "Women are especially welcome." in html
+    assert "There is no Telegram and no Discord." in html
+    assert "Any Telegram or Discord that claims to be official is fake." in html
+    assert "If it seems like a scam, it probably is." in html
+    assert "Kenneth will never DM anyone first." in html
+    assert "Admins will never ask for keys, seed phrases, or funds." in html
+    assert "21 members" not in html
+    assert "exactly 20" not in html.lower()
+    listed = [link for link in PRIMARY_LINKS if link["href"] == CHAT_JOIN]
+    assert listed == [{
+        "label": "Group chat",
+        "href": CHAT_JOIN,
+        "note": "The only group chat, on X",
+    }]
 
 
 def test_thesis_holders_and_listing_note():

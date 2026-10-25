@@ -12,6 +12,8 @@ DEX_API = f"https://api.dexscreener.com/latest/dex/tokens/{CONTRACT}"
 DEX_PAGE = f"https://dexscreener.com/solana/{CONTRACT}"
 PUMP_PAGE = f"https://pump.fun/coin/{CONTRACT}"
 FOMO_PAGE = f"https://fomo.family/tokens/solana/{CONTRACT}"
+# Public join link for the X group DM. Kenneth published this; it is the only group chat.
+CHAT_JOIN = "https://x.com/i/chat/group_join/g2113555281518977367/54IJSMh16G"
 
 
 PYPI_PAGE = f"https://pypi.org/project/{PACKAGE}/"
@@ -56,6 +58,11 @@ PRIMARY_LINKS = (
         "label": "fomo",
         "href": FOMO_PAGE,
         "note": "Trade and follow this contract on fomo",
+    },
+    {
+        "label": "Group chat",
+        "href": CHAT_JOIN,
+        "note": "The only group chat, on X",
     },
     {
         "label": "Requests on PyPI",

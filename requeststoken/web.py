@@ -14,6 +14,7 @@ from requeststoken.config import (
     PROFILE_LINKS,
     PUMP_PAGE,
     FOMO_PAGE,
+    CHAT_JOIN,
     DEX_PAGE,
     ROOT,
 )
@@ -77,6 +78,7 @@ def create_app(services: Services | None = None) -> responder.API:
             dex_page=DEX_PAGE,
             pump_page=PUMP_PAGE,
             fomo_page=FOMO_PAGE,
+            chat_join=CHAT_JOIN,
             primary_links=PRIMARY_LINKS,
             profile_links=PROFILE_LINKS,
         )
