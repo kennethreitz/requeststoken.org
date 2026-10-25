@@ -181,6 +181,32 @@ nav a {
 
 nav a:hover { color: var(--ink); }
 
+nav a.nav-feature {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.1rem 0.65rem;
+  border: 1px solid rgba(142, 184, 204, 0.45);
+  border-radius: 999px;
+  background: rgba(142, 184, 204, 0.1);
+  color: var(--blue);
+}
+
+nav a.nav-feature:hover,
+nav a.nav-feature:focus-visible {
+  color: var(--ink);
+  border-color: var(--blue);
+  background: rgba(142, 184, 204, 0.18);
+}
+
+.nav-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--sage);
+  box-shadow: 0 0 0 3px rgba(156, 186, 150, 0.2);
+}
+
 .hero {
   position: relative;
   padding: 3.2rem 0 4.2rem;
