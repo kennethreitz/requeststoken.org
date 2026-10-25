@@ -1,9 +1,29 @@
 services:
   web:
-    image: requeststoken-org:e41a3b8
+    image: requeststoken-org:7681ea2
     pull_policy: never
     restart: unless-stopped
     environment:
       PORT: "5042"
+      REDIS_URL: redis://redis:6379/0
+      REQUESTS_OBSERVATORY_REDIS_PREFIX: requeststoken:observatory:v1
     expose:
       - "5042"
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory-policy", "noeviction"]
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  redis-data:
