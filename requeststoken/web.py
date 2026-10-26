@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import hashlib
-import json
+import orjson
 from datetime import date, timedelta
 import logging
 from concurrent.futures import ThreadPoolExecutor
@@ -40,7 +40,7 @@ _CSP = (
 
 
 def safe_json(data) -> str:
-    text = json.dumps(data, ensure_ascii=False, separators=(",", ":"))
+    text = orjson.dumps(data).decode()
     return text.replace("&", "\\u0026").replace("<", "\\u003c").replace(">", "\\u003e")
 
 
@@ -96,11 +96,20 @@ def create_app(services: Services | None = None, observatory: DownloadObservator
         templates_dir=str(ROOT / "templates"),
         sessions=False,
         security_headers={"content_security_policy": _CSP},
+        trust_proxy_headers=True,  # behind Traefik
+        request_id=True,
     )
     api.add_middleware(RevalidateAssets)
     asset_version = _asset_version()
 
-    @api.route("/")
+    def redis_ready():
+        if observatory.store is None:
+            return True  # no Redis configured: the saved snapshot is served
+        return bool(observatory.store.client.ping())
+
+    api.add_health_check("observatory_redis", redis_ready)
+
+    @api.get("/")
     def home(req, resp):
         token_future = _POOL.submit(
             _section,
@@ -130,7 +139,7 @@ def create_app(services: Services | None = None, observatory: DownloadObservator
             profile_links=PROFILE_LINKS,
         )
 
-    @api.route("/api/token")
+    @api.get("/api/token")
     def token(req, resp):
         resp.headers["Cache-Control"] = "public, max-age=15"
         resp.media = _section(
@@ -139,7 +148,7 @@ def create_app(services: Services | None = None, observatory: DownloadObservator
             "Market data is temporarily unavailable.",
         )
 
-    @api.route("/api/requests")
+    @api.get("/api/requests")
     def requests_stats(req, resp):
         resp.headers["Cache-Control"] = "public, max-age=300"
         resp.media = _section(
@@ -148,7 +157,7 @@ def create_app(services: Services | None = None, observatory: DownloadObservator
             "Download stats are temporarily unavailable.",
         )
 
-    @api.route("/observatory")
+    @api.get("/observatory")
     def observatory_page(req, resp):
         downloads = observatory.read()
         adoption = adoption_manifest()
@@ -161,7 +170,7 @@ def create_app(services: Services | None = None, observatory: DownloadObservator
             organization_count=len({entry["organization"] for entry in adoption["entries"]}),
         )
 
-    @api.route("/api/observatory")
+    @api.get("/api/observatory")
     def observatory_stats(req, resp):
         resp.headers["Cache-Control"] = "no-store"
         resp.media = observatory.read()

@@ -5,7 +5,7 @@ description = "An honest homepage for the requests community token."
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
-    "responder==9.2.0",
+    "responder[orjson,server]==9.2.0",
     "httpx>=0.27,<0.29",
     "redis>=8.1,<9",
 ]

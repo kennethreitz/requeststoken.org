@@ -8,7 +8,7 @@ so a later failed read can still show the last good figures.
 from __future__ import annotations
 
 import copy
-import json
+import orjson
 import logging
 import os
 import re
@@ -682,7 +682,7 @@ class Services:
         if self.disk is None or not self.disk.is_file():
             return
         try:
-            saved = json.loads(self.disk.read_text(encoding="utf-8"))
+            saved = orjson.loads(self.disk.read_text(encoding="utf-8"))
         except (OSError, ValueError):
             logger.warning("could not read the local upstream cache")
             return
@@ -701,7 +701,7 @@ class Services:
                 current: dict = {}
                 if self.disk.is_file():
                     try:
-                        loaded = json.loads(self.disk.read_text(encoding="utf-8"))
+                        loaded = orjson.loads(self.disk.read_text(encoding="utf-8"))
                         if isinstance(loaded, dict):
                             current = loaded
                     except (OSError, ValueError):
@@ -709,7 +709,7 @@ class Services:
                 current[key] = body
                 self.disk.parent.mkdir(parents=True, exist_ok=True)
                 temporary = self.disk.with_suffix(".tmp")
-                temporary.write_text(json.dumps(current), encoding="utf-8")
+                temporary.write_text(orjson.dumps(current).decode(), encoding="utf-8")
                 temporary.replace(self.disk)
         except OSError:
             logger.warning("could not update the local upstream cache")

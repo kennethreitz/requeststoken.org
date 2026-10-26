@@ -6,7 +6,7 @@ source-check record per UTC day. Only the lease and retry timer expire.
 
 from __future__ import annotations
 
-import json
+import orjson
 import re
 
 from redis import Redis
@@ -84,7 +84,7 @@ class RedisSnapshotStore:
         check_field = "check:" + check["day"] if check is not None else ""
         return bool(self.client.eval(
             PUBLISH, 3, *self.keys, token,
-            json.dumps(envelope, separators=(",", ":")),
+            orjson.dumps(envelope).decode(),
             REFRESH_SECONDS if check is not None else ERROR_SECONDS,
-            check_field, json.dumps(check) if check is not None else "",
+            check_field, orjson.dumps(check).decode() if check is not None else "",
         ))

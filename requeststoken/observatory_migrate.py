@@ -5,7 +5,7 @@ destination must be empty. No lease or retry timer is copied from SQLite.
 """
 
 import argparse
-import json
+import orjson
 import os
 import sqlite3
 from datetime import datetime
@@ -25,11 +25,11 @@ def load_legacy(path):
         ).fetchone()
         if row is None:
             raise ValueError("The source has no Requests snapshot")
-        envelope = DownloadObservatory._decode(json.dumps({
-            "snapshot": json.loads(row["payload"]), "checkedAt": row["checked_at"],
+        envelope = DownloadObservatory._decode(orjson.dumps({
+            "snapshot": orjson.loads(row["payload"]), "checkedAt": row["checked_at"],
             "status": row["status"],
-        }))
-        fields = {"snapshot": json.dumps(envelope)}
+        }).decode())
+        fields = {"snapshot": orjson.dumps(envelope).decode()}
         for record in database.execute("SELECT * FROM source_checks"):
             day = iso_day(record["day"])
             stamp = datetime.fromisoformat(record["fetched_at"].replace("Z", "+00:00"))
@@ -43,7 +43,7 @@ def load_legacy(path):
             }
             if check["rawTotal"] < check["rawLatest"] or not 1 <= check["reportedDays"] <= 10_000:
                 raise ValueError("Invalid source-check counts")
-            fields["check:" + day] = json.dumps(check)
+            fields["check:" + day] = orjson.dumps(check).decode()
     return fields
 
 

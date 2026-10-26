@@ -22,4 +22,4 @@ COPY static ./static
 
 EXPOSE 5042
 
-CMD ["uv", "run", "--frozen", "--no-dev", "--no-sync", "python", "app.py"]
+CMD ["sh", "-c", "exec uv run --frozen --no-dev --no-sync granian --interface asgi --host 0.0.0.0 --port ${PORT:-5042} --workers 1 app:api"]

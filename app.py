@@ -1,6 +1,6 @@
 """Run requeststoken.org.
 
-    uv run python app.py
+    uv run python app.py    # Granian (ASGI) via Responder
 """
 
 from __future__ import annotations
@@ -40,5 +40,5 @@ api = create_app()
 
 
 if __name__ == "__main__":
-    port = int(os.environ["PORT"]) if os.environ.get("PORT") else 5042
-    api.run(address="0.0.0.0", port=port)
+    # Responder serves on $PORT (default 5042) and binds 0.0.0.0 when PORT is set.
+    api.run(server="granian", address="0.0.0.0", port=int(os.environ.get("PORT", 5042)))

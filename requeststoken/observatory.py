@@ -7,7 +7,7 @@ implemented. Requests return the last snapshot while one background read runs.
 from __future__ import annotations
 
 import copy
-import json
+import orjson
 import logging
 import os
 from concurrent.futures import ThreadPoolExecutor
@@ -94,14 +94,14 @@ def validate_snapshot(value: dict) -> dict:
 
 @lru_cache(maxsize=1)
 def adoption_manifest() -> dict:
-    return json.loads((ASSETS / "adoption-evidence.json").read_text(encoding="utf-8"))
+    return orjson.loads((ASSETS / "adoption-evidence.json").read_text(encoding="utf-8"))
 
 
 class DownloadObservatory:
     def __init__(self, *, store=None, seed=None, client=None, clock=None,
                  refresh_enabled=None, executor=None, env=None):
         env = os.environ if env is None else env
-        self.seed = validate_snapshot(seed if seed is not None else json.loads(
+        self.seed = validate_snapshot(seed if seed is not None else orjson.loads(
             (ASSETS / "download-snapshot.json").read_text(encoding="utf-8")
         ))
         self.clock = clock or SystemClock()
@@ -124,7 +124,7 @@ class DownloadObservatory:
 
     @staticmethod
     def _decode(payload):
-        value = json.loads(payload)
+        value = orjson.loads(payload)
         snapshot = validate_snapshot(value["snapshot"])
         checked = datetime.fromisoformat(value["checkedAt"].replace("Z", "+00:00"))
         if checked.tzinfo is None or value["status"] not in ("current", "cached", "fallback"):
