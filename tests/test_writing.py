@@ -93,4 +93,5 @@ def test_about_section_links_context_and_dna():
     assert html.index("thediagram.com/12_6") < html.index("jtushman.github.io") < html.index("leica-camera.blog/2013/09/05")
     assert html.index("leica-camera.blog/2013/09/05") < html.index("watch?v=bpZS9ehw98k\"")
     assert html.index("leica-camera.blog/2013/09/05") < html.index("watch?v=skYBOXE02OQ\"") < html.index("watch?v=bpZS9ehw98k\"")
+    assert "context/blob/master/dna/LICENSE" in html and "18th OOT (out of tube) anniversary" in html
     assert "06 — Disclaimer" in html and "largest holder" in html
