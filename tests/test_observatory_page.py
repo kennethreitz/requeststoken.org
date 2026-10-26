@@ -32,3 +32,18 @@ def test_metrics_route_exposes_prometheus_counters(monkeypatch):
     assert response.headers["content-type"].startswith("text/plain")
     assert "# TYPE responder_requests_total counter" in response.text
     assert 'path="/health",status="200"' in response.text
+
+
+def test_openapi_schema_and_docs_page(monkeypatch):
+    monkeypatch.delenv("REDIS_URL", raising=False)
+    client = TestClient(create_app())
+    spec = client.get("/openapi.json").json()
+    assert spec["info"]["title"] == "requeststoken.org public API"
+    assert set(spec["paths"]) == {"/api/token", "/api/requests", "/api/observatory"}
+    status = spec["paths"]["/api/observatory"]["get"]["responses"]["200"]["content"]["application/json"]["schema"]
+    assert status["properties"]["status"]["enum"] == ["current", "cached", "fallback"]
+    docs = client.get("/api")
+    assert docs.status_code == 200 and "/openapi.json" in docs.text and "/api/observatory" in docs.text
+    assert "unpkg" not in docs.text and "<script" not in docs.text
+    assert client.get("/api/token").status_code == 200
+    assert 'href="/api"' in client.get("/").text

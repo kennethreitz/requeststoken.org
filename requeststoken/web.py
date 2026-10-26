@@ -10,6 +10,8 @@ from concurrent.futures import ThreadPoolExecutor
 
 import responder
 
+from requeststoken import api_schema
+
 from requeststoken.config import (
     CONTRACT,
     PRIMARY_LINKS,
@@ -98,6 +100,11 @@ def create_app(services: Services | None = None, observatory: DownloadObservator
         security_headers={"content_security_policy": _CSP},
         trust_proxy_headers=True,  # behind Traefik
         metrics_route="/metrics",
+        openapi="3.1.0",
+        openapi_route="/openapi.json",
+        title=api_schema.TITLE,
+        version=api_schema.VERSION,
+        description=api_schema.DESCRIPTION,
         request_id=True,
     )
     api.add_middleware(RevalidateAssets)
@@ -110,7 +117,7 @@ def create_app(services: Services | None = None, observatory: DownloadObservator
 
     api.add_health_check("observatory_redis", redis_ready)
 
-    @api.get("/")
+    @api.get("/", include_in_schema=False)
     def home(req, resp):
         token_future = _POOL.submit(
             _section,
@@ -140,7 +147,7 @@ def create_app(services: Services | None = None, observatory: DownloadObservator
             profile_links=PROFILE_LINKS,
         )
 
-    @api.get("/api/token")
+    @api.get("/api/token", **api_schema.ROUTES["/api/token"])
     def token(req, resp):
         resp.headers["Cache-Control"] = "public, max-age=15"
         resp.media = _section(
@@ -149,7 +156,7 @@ def create_app(services: Services | None = None, observatory: DownloadObservator
             "Market data is temporarily unavailable.",
         )
 
-    @api.get("/api/requests")
+    @api.get("/api/requests", **api_schema.ROUTES["/api/requests"])
     def requests_stats(req, resp):
         resp.headers["Cache-Control"] = "public, max-age=300"
         resp.media = _section(
@@ -158,7 +165,7 @@ def create_app(services: Services | None = None, observatory: DownloadObservator
             "Download stats are temporarily unavailable.",
         )
 
-    @api.get("/observatory")
+    @api.get("/observatory", include_in_schema=False)
     def observatory_page(req, resp):
         downloads = observatory.read()
         adoption = adoption_manifest()
@@ -171,10 +178,16 @@ def create_app(services: Services | None = None, observatory: DownloadObservator
             organization_count=len({entry["organization"] for entry in adoption["entries"]}),
         )
 
-    @api.get("/api/observatory")
+    @api.get("/api/observatory", **api_schema.ROUTES["/api/observatory"])
     def observatory_stats(req, resp):
         resp.headers["Cache-Control"] = "no-store"
         resp.media = observatory.read()
+
+    @api.get("/api", include_in_schema=False)
+    def api_docs(req, resp):
+        resp.headers["Cache-Control"] = "no-cache"
+        spec = api.openapi._apispec.to_dict()
+        resp.render("api.html", spec=spec, asset_version=asset_version)
 
     return api
 

@@ -98,3 +98,10 @@
   .obs-section { padding: 2rem 0; }
 }
 @media (prefers-reduced-motion: reduce) { .observatory { scroll-behavior: auto; } }
+
+/* API docs page */
+.api-docs .api-op { padding-block: 1.25rem; border-top: 1px solid rgba(255,255,255,.08); }
+.api-docs .api-op h3 { margin: 0 0 .35rem; }
+.api-docs .api-fields { columns: 2 18rem; list-style: none; padding: 0; margin: .75rem 0 0; font-size: .9rem; }
+.api-docs .api-fields li { break-inside: avoid; margin: 0 0 .3rem; }
+.api-docs details summary { cursor: pointer; }

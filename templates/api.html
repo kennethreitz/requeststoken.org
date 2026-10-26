@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>API — requeststoken.org</title>
+  <meta name="description" content="Read-only JSON endpoints used by requeststoken.org, with an OpenAPI schema.">
+  <meta name="theme-color" content="#101410">
+  <link rel="canonical" href="https://requeststoken.org/api">
+  <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/static/css/site.css?v={{ asset_version }}">
+  <link rel="stylesheet" href="/static/css/observatory.css?v={{ asset_version }}">
+</head>
+<body class="observatory api-docs" id="top">
+  <a class="skip" href="#content">Skip to content</a>
+  <header class="site-header"><div class="wrap bar">
+    <a class="brand" href="/">requests</a>
+    <nav aria-label="API"><a href="#endpoints">Endpoints</a><a href="#operational">Operational</a><a href="/openapi.json">openapi.json</a></nav>
+  </div></header>
+  <main id="content" class="wrap">
+    <section class="obs-hero" aria-labelledby="api-title">
+      <div><p class="kicker">OpenAPI {{ spec.openapi }} · v{{ spec.info.version }}</p><h1 id="api-title">API</h1>
+        <p class="lede">{{ spec.info.title }}</p>
+        <p class="obs-muted">{{ spec.info.description }}</p>
+        <p class="obs-muted">Machine-readable schema: <a href="/openapi.json">/openapi.json</a></p>
+      </div>
+    </section>
+
+    <section id="endpoints" class="obs-section" aria-labelledby="endpoints-title">
+      <div class="obs-heading"><div><p class="index">01 — Endpoints</p><h2 id="endpoints-title">Read-only JSON</h2></div></div>
+      {% for path, item in spec.paths.items() %}{% for method, op in item.items() %}
+      <article class="obs-section api-op" id="op-{{ op.operationId or path }}">
+        <h3><code>{{ method|upper }} <a href="{{ path }}">{{ path }}</a></code></h3>
+        <p><strong>{{ op.summary }}</strong>{% if op.tags %} <span class="obs-muted">· {{ op.tags|join(', ') }}</span>{% endif %}</p>
+        <p class="obs-muted">{{ op.description }}</p>
+        {% set ok = op.responses['200'] %}
+        {% if ok and ok.content %}{% set schema = ok.content['application/json'].schema %}
+        <details><summary>Response fields ({{ schema.properties|length }})</summary>
+          <ul class="api-fields">{% for name, prop in schema.properties.items() %}
+            <li><code>{{ name }}</code> <span class="obs-muted">{{ prop.type if prop.type is string else prop.type|join(' | ') }}{% if prop.enum %} — {{ prop.enum|join(', ') }}{% endif %}{% if prop.description %} — {{ prop.description }}{% endif %}</span></li>
+          {% endfor %}</ul>
+        </details>{% endif %}
+      </article>
+      {% endfor %}{% endfor %}
+    </section>
+
+    <section id="operational" class="obs-section" aria-labelledby="ops-title">
+      <div class="obs-heading"><div><p class="index">02 — Operational</p><h2 id="ops-title">Health and metrics</h2></div></div>
+      <p><code>GET <a href="/health">/health</a></code> <span class="obs-muted">— readiness: <code>{"status": "ok", "checks": {...}}</code>; 503 when a check fails.</span></p>
+      <p><code>GET <a href="/metrics">/metrics</a></code> <span class="obs-muted">— Prometheus text: request counts, in-flight requests and latency per route.</span></p>
+    </section>
+  </main>
+  <footer class="wrap obs-footer"><a href="/">Back to requeststoken.org</a><span>Requests · HTTP for Humans</span></footer>
+</body>
+</html>
