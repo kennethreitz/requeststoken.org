@@ -49,7 +49,7 @@
         <p class="kicker">Solana community token</p>
         <h1><span class="dollar">$</span>requests</h1>
         <p class="lede">Named for the Python HTTP library Kenneth Reitz created. Creator fees from this coin are directed to him.</p>
-        <p class="deck">This page is a public record of what the coin is for. What is known is written plainly, and every claim links to something you can check on chain or on PyPI. Nothing here is an offer or a promise.</p>
+        <p class="deck">This page is a public record of what the coin is for, kept in the spirit of a library that has served people for fifteen years. What is known is written plainly, and every claim links to something you can check on chain or on PyPI. Nothing here is an offer or a promise.</p>
 
         <div class="contract">
           <span class="contract-label">Contract</span>
@@ -108,7 +108,7 @@
           <p class="index">01 — Intentions</p>
           <h2>What the coin is for <a class="anchor" href="#intentions" aria-label="Link to this section">#</a></h2>
           <p>The coin is meant to celebrate and support open source, and the legacy of Requests. Transparency comes first. There is no sleight of hand.</p>
-          <p>Requests began as Kenneth’s library — “HTTP for Humans” — and the project now lives with the Python Software Foundation at <a href="https://github.com/psf/requests" target="_blank" rel="noopener noreferrer">github.com/psf/requests</a>. This token is a separate thing: a memecoin on Solana. It does not change the library, and the library does not back the token.</p>
+          <p>Requests began as Kenneth’s library — “HTTP for Humans” — and it now lives on in the care of the Python Software Foundation at <a href="https://github.com/psf/requests" target="_blank" rel="noopener noreferrer">github.com/psf/requests</a>. This token is a separate thing: a memecoin on Solana. It does not change the library, and the library does not back the token.</p>
           <p>This page does not publish a roadmap, a price target, a buyback, or a burn.</p>
           <div class="thesis" id="thesis">
             <h3>The thesis, plainly</h3>
@@ -149,7 +149,7 @@
       <div class="wrap">
         <p class="index">02 — The library</p>
         <h2>Requests on PyPI <a class="anchor" href="#library" aria-label="Link to this section">#</a></h2>
-        <p class="deck">The package named <code>requests</code>. These are download counts, not a measure of the token.</p>
+        <p class="deck">The package named <code>requests</code>. Its download counts are a living record of a library still in daily use, not a measure of the token.</p>
         <p><a href="/observatory">Explore download history and project usage →</a></p>
 
         <p id="library-unavailable" class="unavailable" {% if stats.available %}hidden{% endif %}>
@@ -178,7 +178,7 @@
           <li><span class="tl-year">2012</span><span class="tl-text">Requests 1.0.0 is released in December. <a href="https://pypi.org/project/requests/1.0.0/" target="_blank" rel="noopener noreferrer">PyPI</a></span></li>
           <li><span class="tl-year">2013</span><span class="tl-text">Requests 2.0.0 is released on November 15. <a href="https://pypi.org/project/requests/2.0.0/" target="_blank" rel="noopener noreferrer">PyPI</a></span></li>
           <li><span class="tl-year">PSF</span><span class="tl-text">The project moves to the Python Software Foundation and is maintained at <a href="https://github.com/psf/requests" target="_blank" rel="noopener noreferrer">github.com/psf/requests</a>.</span></li>
-          <li><span class="tl-year">Today</span><span class="tl-text">{% if stats.available and stats.figures %}{{ stats.figures[0].display }} downloads {{ stats.figures[0].label|lower }}, per pypistats.org.{% else %}Current download counts appear above when available.{% endif %}</span></li>
+          <li><span class="tl-year">Today</span><span class="tl-text">{% if stats.available and stats.figures %}Fifteen years on, {{ stats.figures[0].display }} downloads {{ stats.figures[0].label|lower }}, per pypistats.org.{% else %}Current download counts appear above when available.{% endif %}</span></li>
         </ol>
 
         <p class="used-by">Google, Microsoft, AWS, Stripe, and others ship software that depends on Requests.</p>
@@ -323,7 +323,7 @@
 
       <p class="contract-repeat"><span>Contract</span> <code>{{ contract }}</code></p>
       <p class="colophon">
-        requeststoken.org is built with <a href="https://github.com/kennethreitz/responder" target="_blank" rel="noopener noreferrer">Responder</a>.
+        requeststoken.org is built with <a href="https://github.com/kennethreitz/responder" target="_blank" rel="noopener noreferrer">Responder</a>, a newer framework from the author of Requests.
         Live figures are also available through the <a href="/api">API</a>.
         The Requests library and this token are different things. This token is not a Python Software Foundation project.
       </p>

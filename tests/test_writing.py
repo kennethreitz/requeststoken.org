@@ -98,3 +98,16 @@ def test_about_section_links_context_and_dna():
     assert html.index("Written about Kenneth") < html.index("Other interesting reading") < html.index("lyndsysimon.com/posts/the_future_of_python/")
     assert html.index("Other interesting reading") < html.index("Pieces on Python’s past and future") < html.index("lyndsysimon.com")
     assert "06 — Disclaimer" in html and "largest holder" in html
+
+
+def test_legacy_copy_edits():
+    html = TestClient(create_app()).get("/").text
+    for text in (
+        "kept in the spirit of a library that has served people for fifteen years",
+        "it now lives on in the care of the Python Software Foundation",
+        "a living record of a library still in daily use, not a measure of the token",
+        "a newer framework from the author of Requests.",
+    ):
+        assert text in html
+    assert 'href="https://github.com/kennethreitz/responder"' in html
+    assert html.count("legacy") == 2
