@@ -91,5 +91,5 @@ def test_about_section_links_context_and_dna():
     assert "jtushman.github.io/blog/2013/05/22/kenneth-reitz-should-be-a-millionaire/" in html
     assert "or “Introducing the Dollar Store”" in html
     assert html.index("thediagram.com/12_6") < html.index("jtushman.github.io") < html.index("leica-camera.blog/2013/09/05")
-    assert html.index("leica-camera.blog/2013/09/05") < html.index("watch?v=bpZS9ehw98k&amp;t=104s")
+    assert html.index("leica-camera.blog/2013/09/05") < html.index("watch?v=bpZS9ehw98k\"")
     assert "06 — Disclaimer" in html and "largest holder" in html
