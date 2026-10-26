@@ -1,4 +1,4 @@
-import { DAY, bounds, countdown, dateKey, dateTime, historyCSV, historyRows, latestDay, missingDays, periodTotal, shortDate, trailingWeek } from './observatory-stats.mjs?v=3';
+import { DAY, bounds, countdown, dateKey, dateTime, historyCSV, historyRows, latestDay, missingDays, periodTotal, shortDate, trailingWeek } from './observatory-stats.mjs?v=4';
 
 const $ = (id) => document.getElementById(id);
 const format = (value) => value === null ? 'Pending' : value.toLocaleString('en-US');
@@ -60,7 +60,7 @@ async function refresh() {
     if (body.refreshing && document.visibilityState === 'visible') retryTimer = setTimeout(refresh, 10_000);
   } catch (error) {
     console.error(error);
-    $('source-status').textContent = `Could not reach the statistics service. Showing the retained snapshot from ${snapshot.fetchedAt}, through ${snapshot.latestDate} UTC.`;
+    response = { ...response, message: 'Could not reach the statistics service. Showing the retained snapshot.', refreshing: false };
   } finally { pendingFetch = false; $('refresh-counts').disabled = false; }
   // Render outside the network try, so a display bug is never reported as a source outage.
   renderCounts(); renderHistory(); renderQueries(); tick();
