@@ -105,3 +105,4 @@
 .api-docs .api-fields { columns: 2 18rem; list-style: none; padding: 0; margin: .75rem 0 0; font-size: .9rem; }
 .api-docs .api-fields li { break-inside: avoid; margin: 0 0 .3rem; }
 .api-docs details summary { cursor: pointer; }
+.api-docs .api-example { overflow-x: auto; padding: 1rem; margin-top: 1rem; background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.08); border-radius: 8px; font-size: .85rem; }

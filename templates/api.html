@@ -15,7 +15,7 @@
   <a class="skip" href="#content">Skip to content</a>
   <header class="site-header"><div class="wrap bar">
     <a class="brand" href="/">requests</a>
-    <nav aria-label="API"><a href="#endpoints">Endpoints</a><a href="#operational">Operational</a><a href="/openapi.json">openapi.json</a></nav>
+    <nav aria-label="API"><a href="#endpoints">Endpoints</a><a href="#negotiation">Formats</a><a href="#operational">Operational</a><a href="/openapi.json">openapi.json</a></nav>
   </div></header>
   <main id="content" class="wrap">
     <section class="obs-hero" aria-labelledby="api-title">
@@ -44,8 +44,25 @@
       {% endfor %}{% endfor %}
     </section>
 
+    <section id="negotiation" class="obs-section" aria-labelledby="neg-title">
+      <div class="obs-heading"><div><p class="index">02 — Content negotiation</p><h2 id="neg-title">JSON or YAML</h2></div></div>
+      <p class="obs-muted">The JSON endpoints above, <code>/openapi.json</code> and <code>/health</code> choose a format from the <code>Accept</code> header and send <code>Vary: Accept</code>.</p>
+      <ul class="api-fields">
+        <li><code>application/json</code>, <code>*/*</code>, no header <span class="obs-muted">— JSON</span></li>
+        <li><code>application/yaml</code>, <code>application/x-yaml</code>, <code>text/yaml</code> <span class="obs-muted">— YAML (<code>application/yaml</code>)</span></li>
+        <li>q-values <span class="obs-muted">— the higher-quality format wins; <code>q=0</code> excludes a format</span></li>
+        <li>Anything else (<code>text/html</code>, <code>image/png</code>…) <span class="obs-muted">— JSON with 200, not 406</span></li>
+        <li>Errors <span class="obs-muted">— <code>application/problem+json</code> regardless of Accept (e.g. 404, 405)</span></li>
+        <li><code>/metrics</code> <span class="obs-muted">— always Prometheus text</span></li>
+      </ul>
+      <pre class="api-example"><code>curl https://requeststoken.org/api/token
+curl -H 'Accept: application/yaml' https://requeststoken.org/api/token
+curl -H 'Accept: application/yaml;q=0.9, application/json;q=0.5' https://requeststoken.org/health
+curl -H 'Accept: application/yaml' https://requeststoken.org/openapi.json</code></pre>
+    </section>
+
     <section id="operational" class="obs-section" aria-labelledby="ops-title">
-      <div class="obs-heading"><div><p class="index">02 — Operational</p><h2 id="ops-title">Health and metrics</h2></div></div>
+      <div class="obs-heading"><div><p class="index">03 — Operational</p><h2 id="ops-title">Health and metrics</h2></div></div>
       <p><code>GET <a href="/health">/health</a></code> <span class="obs-muted">— readiness: <code>{"status": "ok", "checks": {...}}</code>; 503 when a check fails.</span></p>
       <p><code>GET <a href="/metrics">/metrics</a></code> <span class="obs-muted">— Prometheus text: request counts, in-flight requests and latency per route.</span></p>
     </section>

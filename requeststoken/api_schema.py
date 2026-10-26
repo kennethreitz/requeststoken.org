@@ -10,8 +10,11 @@ DESCRIPTION = (
     "DexScreener, Requests download figures, and the download observatory. "
     "Figures are informational, may be delayed or unavailable, and are not "
     "financial advice or a promise of any return. No authentication; please "
-    "cache responses and poll gently. Operational routes: `/health` (readiness, "
-    "200 or 503) and `/metrics` (Prometheus text)."
+    "cache responses and poll gently. JSON endpoints negotiate on the Accept "
+    "header: JSON by default, YAML when YAML is preferred (application/yaml, "
+    "application/x-yaml or text/yaml); responses carry Vary: Accept. Errors are "
+    "application/problem+json. Operational routes: /health (readiness, 200 or "
+    "503) and /metrics (Prometheus text)."
 )
 
 S, N, I, B = {"type": "string"}, {"type": "number"}, {"type": "integer"}, {"type": "boolean"}
@@ -22,7 +25,7 @@ def _nullable(schema):
 
 
 def _ok(description, schema):
-    return {200: {"description": description, "content": {"application/json": {"schema": schema}}}}
+    return {200: {"description": description, "content": {"application/json": {"schema": schema}, "application/yaml": {"schema": schema}}}}
 
 
 _TOKEN_STR = [

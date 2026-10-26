@@ -47,3 +47,20 @@ def test_openapi_schema_and_docs_page(monkeypatch):
     assert "unpkg" not in docs.text and "<script" not in docs.text
     assert client.get("/api/token").status_code == 200
     assert 'href="/api"' in client.get("/").text
+
+
+def test_json_endpoints_negotiate_yaml(monkeypatch):
+    monkeypatch.delenv("REDIS_URL", raising=False)
+    client = TestClient(create_app())
+    for path in ("/api/token", "/api/requests", "/api/observatory", "/health"):
+        assert client.get(path).headers["content-type"].startswith("application/json")
+        yaml = client.get(path, headers={"Accept": "application/x-yaml"})
+        assert yaml.status_code == 200 and yaml.headers["content-type"].startswith("application/yaml")
+        assert "Accept" in yaml.headers["vary"]
+        html = client.get(path, headers={"Accept": "text/html"})
+        assert html.status_code == 200 and html.headers["content-type"].startswith("application/json")
+    spec = client.get("/openapi.json").json()
+    content = spec["paths"]["/api/token"]["get"]["responses"]["200"]["content"]
+    assert set(content) == {"application/json", "application/yaml"}
+    assert "`" not in spec["info"]["description"]
+    assert client.get("/api/nope").headers["content-type"] == "application/problem+json"
