@@ -12,7 +12,7 @@
   <meta property="og:description" content="The contract, the intention, library download stats, and live market figures. Not financial advice.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://requeststoken.org/">
-  <link rel="stylesheet" href="/static/css/site.css">
+  <link rel="stylesheet" href="/static/css/site.css?v={{ asset_version }}">
   <script defer src="https://analytics.kennethreitz.org/script.js" data-website-id="b3e5361e-b5d5-4097-95a6-d9d9def5378a"></script>
 </head>
 <body id="top">
@@ -30,6 +30,7 @@
         <a href="#intentions">Intentions</a>
         <a href="#library">The library</a>
         <a href="#market">The market</a>
+        <a href="#writing">Writing</a>
         <a href="#disclaimer">Disclaimer</a>
         <a class="nav-feature" href="/observatory"><span class="nav-dot" aria-hidden="true"></span>Observatory</a>
       </nav>
@@ -242,9 +243,28 @@
       </div>
     </section>
 
+    <section class="section writing" id="writing" aria-labelledby="writing-title">
+      <div class="wrap">
+        <p class="index">04 — Writing</p>
+        <h2 id="writing-title">From Kenneth’s blog <a class="anchor" href="#writing" aria-label="Link to this section">#</a></h2>
+        {% if writing.posts %}
+        <ol class="writing-list">
+          {% for post in writing.posts %}
+          <li class="writing-post{% if post.pinned %} is-pinned{% endif %}">
+            <p class="writing-meta">{% if post.pinned %}<span class="writing-pin">Start here</span>{% endif %}{% if post.date %}<time datetime="{{ post.date }}">{{ post.date }}</time>{% endif %}</p>
+            <h3><a href="{{ post.link }}" target="_blank" rel="noopener noreferrer">{{ post.title }}</a></h3>
+            {% if post.excerpt %}<p>{{ post.excerpt }}</p>{% endif %}
+          </li>
+          {% endfor %}
+        </ol>
+        {% endif %}
+        <p class="writing-more"><a href="{{ writing.more }}" target="_blank" rel="noopener noreferrer">More essays on kennethreitz.org →</a>{% if writing.status == 'stale' %} <span class="note">Showing the last saved list; the blog feed is not responding.</span>{% endif %}</p>
+      </div>
+    </section>
+
     <div class="disclaimer-band" id="disclaimer">
       <div class="wrap">
-        <p class="index">04 — Disclaimer</p>
+        <p class="index">05 — Disclaimer</p>
         <h2>Disclaimer <a class="anchor" href="#disclaimer" aria-label="Link to this section">#</a></h2>
         <p>Memecoins are highly speculative. This is not financial advice. There are no promises of price, returns, or value. Only spend what you can afford to lose.</p>
         <p>Beware of impersonators, paid-trending pitches, and anyone who asks you to DM them about fees. The only official links are the ones listed on this site.</p>
@@ -285,6 +305,6 @@
   </footer>
 
   <script id="stats-data" type="application/json">{{ stats_json | safe }}</script>
-  <script src="/static/js/site.js"></script>
+  <script src="/static/js/site.js?v={{ asset_version }}"></script>
 </body>
 </html>

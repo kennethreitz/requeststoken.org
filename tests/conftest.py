@@ -28,6 +28,17 @@ def isolate_observatory_environment(monkeypatch):
         monkeypatch.delenv(name, raising=False)
 
 
+@pytest.fixture(autouse=True)
+def offline_writing_feed(monkeypatch):
+    """Never fetch the real blog feed from tests."""
+    from requeststoken import writing
+
+    def unavailable():
+        raise OSError("offline in tests")
+
+    monkeypatch.setattr(writing.Writing, "_fetch", staticmethod(unavailable))
+
+
 class IsolatedRedis:
     def __init__(self, binary, directory):
         with socket.socket() as listener:

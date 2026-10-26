@@ -39,7 +39,7 @@ def test_openapi_schema_and_docs_page(monkeypatch):
     client = TestClient(create_app())
     spec = client.get("/openapi.json").json()
     assert spec["info"]["title"] == "requeststoken.org public API"
-    assert set(spec["paths"]) == {"/api/token", "/api/requests", "/api/observatory"}
+    assert set(spec["paths"]) == {"/api/token", "/api/requests", "/api/observatory", "/api/writing"}
     status = spec["paths"]["/api/observatory"]["get"]["responses"]["200"]["content"]["application/json"]["schema"]
     assert status["properties"]["status"]["enum"] == ["current", "cached", "fallback"]
     docs = client.get("/api")

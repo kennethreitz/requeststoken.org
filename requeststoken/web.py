@@ -11,6 +11,7 @@ from concurrent.futures import ThreadPoolExecutor
 import responder
 
 from requeststoken import api_schema
+from requeststoken.writing import Writing
 
 from requeststoken.config import (
     CONTRACT,
@@ -69,7 +70,7 @@ class RevalidateAssets:
 
 def _asset_version() -> str:
     digest = hashlib.sha256()
-    for path in sorted((ROOT / "static" / "css").glob("*.css")) + sorted((ROOT / "static" / "js").glob("*.mjs")):
+    for path in sorted((ROOT / "static" / "css").glob("*.css")) + sorted((ROOT / "static" / "js").glob("*.mjs")) + sorted((ROOT / "static" / "js").glob("*.js")):
         digest.update(path.read_bytes())
     return digest.hexdigest()[:10]
 
@@ -89,9 +90,10 @@ def recent_counts(snapshot: dict) -> dict:
     }
 
 
-def create_app(services: Services | None = None, observatory: DownloadObservatory | None = None) -> responder.API:
+def create_app(services: Services | None = None, observatory: DownloadObservatory | None = None, writing: Writing | None = None) -> responder.API:
     services = services or Services()
     observatory = observatory or DownloadObservatory()
+    writing = writing or Writing(client=getattr(observatory.store, "client", None))
     api = responder.API(
         static_dir=str(ROOT / "static"),
         static_route="/static",
@@ -131,8 +133,14 @@ def create_app(services: Services | None = None, observatory: DownloadObservator
             unavailable_stats,
             "Download stats are temporarily unavailable.",
         )
+        writing_future = _POOL.submit(writing.read)
         token = token_future.result()
         stats = stats_future.result()
+        try:
+            latest_writing = writing_future.result(timeout=5)
+        except Exception as exc:
+            logger.warning("writing section unavailable: %s", type(exc).__name__)
+            latest_writing = Writing._envelope({}, "unavailable")
         resp.headers["Cache-Control"] = "no-store"
         resp.render(
             "index.html",
@@ -145,6 +153,8 @@ def create_app(services: Services | None = None, observatory: DownloadObservator
             fomo_page=FOMO_PAGE,
             primary_links=PRIMARY_LINKS,
             profile_links=PROFILE_LINKS,
+            writing=latest_writing,
+            asset_version=asset_version,
         )
 
     @api.get("/api/token", **api_schema.ROUTES["/api/token"])
@@ -182,6 +192,11 @@ def create_app(services: Services | None = None, observatory: DownloadObservator
     def observatory_stats(req, resp):
         resp.headers["Cache-Control"] = "no-store"
         resp.media = observatory.read()
+
+    @api.get("/api/writing", **api_schema.ROUTES["/api/writing"])
+    def writing_feed(req, resp):
+        resp.headers["Cache-Control"] = "public, max-age=300"
+        resp.media = writing.read()
 
     @api.get("/api", include_in_schema=False)
     def api_docs(req, resp):

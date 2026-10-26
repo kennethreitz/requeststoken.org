@@ -91,7 +91,22 @@ OBSERVATORY = {
     "required": ["snapshot", "checkedAt", "status"],
 }
 
+POST = {"type": "object", "properties": {
+    "title": S, "link": {**S, "format": "uri", "description": "Always an https://kennethreitz.org/ URL."},
+    "date": _nullable({**S, "format": "date"}), "excerpt": {**S, "description": "Plain text, no HTML."},
+    "pinned": {**B, "description": "True for the essay about the token, always listed first."}}}
+
+WRITING = {"type": "object", "properties": {
+    "status": {"type": "string", "enum": ["current", "cached", "stale", "unavailable"]},
+    "source": S, "more": S, "fetchedAt": _nullable({**S, "format": "date-time"}),
+    "posts": {"type": "array", "items": POST}}, "required": ["status", "posts"]}
+
 ROUTES = {
+    "/api/writing": dict(
+        summary="Latest essays from kennethreitz.org", tags=["Writing"],
+        description="Up to five posts from https://kennethreitz.org/feed.xml (titles, links, dates and plain-text excerpts only), with the essay about the token pinned first. The feed is cached for 45 minutes and the last good copy is served if the blog is unreachable.",
+        responses=_ok("Latest posts", WRITING),
+    ),
     "/api/token": dict(
         summary="Token market data", tags=["Token"],
         description="Price, market cap, liquidity, 24h volume and trade counts for the token pair, relayed from DexScreener. Cached for 15 seconds.",
