@@ -31,16 +31,17 @@
       <div class="obs-heading"><div><p class="index">01 — Download records</p><h2 id="downloads-title">The latest reported counts</h2></div><button id="refresh-counts" type="button">Check for updates</button></div>
       <p class="obs-source-note">Daily source · delayed updates. A realtime event feed is not connected.</p>
       <div class="obs-counters">
-        {% for period, label in [('day','Today'),('week','This week'),('month','This month'),('lifetime','Historical total')] %}
+        {% for period, label in [('day','Latest day'),('week','Last 7 days'),('month','This month'),('lifetime','Historical total')] %}
         <article class="obs-counter{% if period == 'lifetime' %} obs-counter-total{% endif %}"><h3>{{ label }}</h3>
           <p class="obs-number" id="count-{{ period }}">{% if period == 'lifetime' %}{{ '{:,}'.format(downloads.snapshot.rawTotal) }}{% else %}Pending{% endif %}</p>
-          {% if period != 'lifetime' %}<p class="obs-muted">Next period <span id="reset-{{ period }}">—</span> <span class="obs-utc">UTC</span></p>
+          {% if period in ('day','week') %}<p class="obs-muted" id="when-{{ period }}">—</p>
+          {% elif period != 'lifetime' %}<p class="obs-muted">Next period <span id="reset-{{ period }}">—</span> <span class="obs-utc">UTC</span></p>
           {% else %}<p class="obs-muted" id="total-coverage">From {{ downloads.snapshot.firstDate }} · incomplete coverage</p>{% endif %}
         </article>
         {% endfor %}
       </div>
       <p id="source-status" class="obs-muted" role="status">{{ downloads.message or 'Source snapshot available.' }} Data through {{ downloads.snapshot.latestDate }} UTC.</p>
-      <p class="obs-fine">Calendar day, Monday-based week and calendar month, in UTC. A period without reported data stays Pending. These are download records, not unique users.</p>
+      <p class="obs-fine">Latest day is the most recent day the source has reported; Last 7 days ends on that day. This month is the calendar month so far. All dates are UTC. A card shows Pending only when no data has been reported. These are download records, not unique users.</p>
       <noscript><p>Enable JavaScript for calendar counts, charts, filtering and interactive details. The historical total above is from the saved snapshot. <a href="/static/observatory/download-snapshot.json">Download the dated snapshot</a>.</p></noscript>
     </section>
 

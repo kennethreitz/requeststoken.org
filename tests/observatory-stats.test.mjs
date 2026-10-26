@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { DAY, bounds, dateKey, historyCSV, historyRows, missingDays, periodTotal } from '../static/js/observatory-stats.mjs';
+import { DAY, bounds, dateKey, historyCSV, historyRows, latestDay, missingDays, periodTotal, shortDate, trailingWeek } from '../static/js/observatory-stats.mjs';
 
 function snapshot(last = '2026-10-25') {
   const end = Date.parse(last + 'T00:00:00Z');
@@ -42,4 +42,16 @@ test('missing, pending, partial and explicit zero remain distinguishable in CSV'
   assert.match(csv, /2026-10-20,2026-10-20,,0,1,missing/);
   assert.match(csv, /2026-10-25,2026-10-25,0,1,1,reported/);
   assert.equal(historyRows(s, 'week', Date.parse('2026-10-25T12:00:00Z'))[0].status, 'partial');
+});
+
+test('latest day and trailing week use reported data only', () => {
+  const s = snapshot('2026-10-25');
+  assert.deepEqual(latestDay(s), { date: '2026-10-25', downloads: 100 });
+  assert.deepEqual(trailingWeek(s), { start: '2026-10-19', end: '2026-10-25', downloads: 700, available: 7 });
+  s.daily = s.daily.filter((r) => r.date !== '2026-10-21');
+  assert.equal(trailingWeek(s).available, 6);
+  assert.equal(trailingWeek(s).downloads, 600);
+  assert.equal(shortDate('2026-10-25'), 'Oct 25');
+  assert.equal(latestDay({ ...s, daily: [] }), null);
+  assert.equal(trailingWeek({ ...s, daily: [] }), null);
 });

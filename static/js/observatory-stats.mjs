@@ -20,6 +20,19 @@ export function periodTotal(snapshot, period, now) {
   const rows = snapshot.daily.filter((r) => dateTime(r.date) >= start && dateTime(r.date) < end && r.date <= today);
   return rows.length ? rows.reduce((sum, r) => sum + r.downloads, 0) : null;
 }
+const SHORT = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
+export const shortDate = (date) => SHORT.format(dateTime(date));
+// The most recent reported day, and the 7 calendar days ending on it. Never estimated.
+export function latestDay(snapshot) {
+  const row = snapshot.daily.find((r) => r.date === snapshot.latestDate);
+  return row ? { date: row.date, downloads: row.downloads } : null;
+}
+export function trailingWeek(snapshot) {
+  if (!latestDay(snapshot)) return null;
+  const end = dateTime(snapshot.latestDate), start = end - 6 * DAY;
+  const rows = snapshot.daily.filter((r) => dateTime(r.date) >= start && dateTime(r.date) <= end);
+  return { start: dateKey(start), end: snapshot.latestDate, downloads: rows.reduce((sum, r) => sum + r.downloads, 0), available: rows.length };
+}
 export function historyRows(snapshot, period, now) {
   const today = bounds('day', now).start;
   const values = new Map(snapshot.daily.map((r) => [r.date, r.downloads]));

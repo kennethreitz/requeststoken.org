@@ -1,4 +1,4 @@
-import { DAY, bounds, countdown, dateKey, dateTime, historyCSV, historyRows, missingDays, periodTotal } from './observatory-stats.mjs';
+import { DAY, bounds, countdown, dateKey, dateTime, historyCSV, historyRows, latestDay, missingDays, periodTotal, shortDate, trailingWeek } from './observatory-stats.mjs';
 
 const $ = (id) => document.getElementById(id);
 const format = (value) => value === null ? 'Pending' : value.toLocaleString('en-US');
@@ -27,7 +27,12 @@ function statusText() {
   $('source-status').textContent = `${prefix}Data through ${snapshot.latestDate} UTC. Snapshot: ${snapshot.fetchedAt}. Last check: ${response.checkedAt}.${response.refreshing ? ' A shared source check is running.' : ''}`;
 }
 function renderCounts() {
-  for (const period of ['day', 'week', 'month', 'lifetime']) $('count-' + period).textContent = format(periodTotal(snapshot, period, now()));
+  for (const period of ['month', 'lifetime']) $('count-' + period).textContent = format(periodTotal(snapshot, period, now()));
+  const day = latestDay(snapshot), week = trailingWeek(snapshot);
+  $('count-day').textContent = format(day ? day.downloads : null);
+  $('when-day').textContent = day ? `${shortDate(day.date)} UTC · latest reported day` : 'No reported day yet';
+  $('count-week').textContent = format(week ? week.downloads : null);
+  $('when-week').textContent = week ? `${shortDate(week.start)} – ${shortDate(week.end)} UTC${week.available < 7 ? ` · ${week.available} of 7 days reported` : ''}` : 'No reported days yet';
   $('total-coverage').textContent = `From ${snapshot.firstDate} · ${missingDays(snapshot)} missing dates`;
   const aggregate = snapshot.daily.reduce((sum, row) => sum + row.downloads, 0);
   const difference = aggregate - snapshot.rawTotal;
@@ -36,7 +41,7 @@ function renderCounts() {
 }
 function tick() {
   const moment = now();
-  for (const period of ['day', 'week', 'month']) $('reset-' + period).textContent = countdown(bounds(period, moment).end, moment);
+  for (const period of ['month']) $('reset-' + period).textContent = countdown(bounds(period, moment).end, moment);
   if (activeDay !== dateKey(moment)) {
     activeDay = dateKey(moment); historyPage = 0;
     setRange(); renderCounts(); renderHistory();
