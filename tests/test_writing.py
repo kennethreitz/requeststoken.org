@@ -81,3 +81,11 @@ def test_homepage_and_api_render_writing_and_survive_outage():
     offline = TestClient(create_app())
     page = offline.get("/")
     assert page.status_code == 200 and PINNED_URL in page.text and "More essays" in page.text
+
+
+def test_about_section_links_context_and_dna():
+    html = TestClient(create_app()).get("/").text
+    assert 'id="about"' in html and 'href="#about"' in html
+    assert 'href="https://context.kennethreitz.org"' in html
+    assert "https://github.com/kennethreitz/context/tree/master/dna" in html
+    assert "06 — Disclaimer" in html and "largest holder" in html

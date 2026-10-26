@@ -772,3 +772,11 @@ h2:hover .anchor, h3:hover .anchor, .anchor:focus-visible { opacity: 0.8; }
 .writing-post.is-pinned { border-left: 2px solid var(--gold); padding-left: 1rem; }
 .writing-more { margin-top: 1.25rem; }
 @media (max-width: 640px) { .writing-post:nth-child(n+5) p { display: none; } }
+
+/* About */
+.about-body { max-width: 44rem; }
+.about-body h3 { margin: 1.6rem 0 .4rem; font-size: 1.1rem; }
+.about-body p { color: var(--muted); }
+.about-cta { margin: 1rem 0 0; }
+.about-primary { display: inline-block; padding: .6rem 1rem; border: 1px solid var(--gold); border-radius: 6px; color: var(--gold); text-decoration: none; font-weight: 600; }
+.about-primary:hover, .about-primary:focus-visible { background: var(--gold); color: var(--bg, #111); }
