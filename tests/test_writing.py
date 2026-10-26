@@ -95,4 +95,5 @@ def test_about_section_links_context_and_dna():
     assert html.index("leica-camera.blog/2013/09/05") < html.index("watch?v=skYBOXE02OQ\"") < html.index("watch?v=bpZS9ehw98k\"")
     assert "context/blob/master/dna/LICENSE" in html and "18th OOT (out of tube) anniversary" in html
     assert "Kenneth’s open-source genome data on GitHub" in html and "My open-source" not in html
+    assert html.index("Written about Kenneth") < html.index("Other interesting reading") < html.index("lyndsysimon.com/posts/the_future_of_python/")
     assert "06 — Disclaimer" in html and "largest holder" in html
