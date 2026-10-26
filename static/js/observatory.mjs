@@ -1,4 +1,4 @@
-import { DAY, bounds, countdown, dateKey, dateTime, historyCSV, historyRows, latestDay, missingDays, periodTotal, shortDate, trailingWeek } from './observatory-stats.mjs';
+import { DAY, bounds, countdown, dateKey, dateTime, historyCSV, historyRows, latestDay, missingDays, periodTotal, shortDate, trailingWeek } from './observatory-stats.mjs?v=3';
 
 const $ = (id) => document.getElementById(id);
 const format = (value) => value === null ? 'Pending' : value.toLocaleString('en-US');
@@ -41,7 +41,7 @@ function renderCounts() {
 }
 function tick() {
   const moment = now();
-  for (const period of ['month']) $('reset-' + period).textContent = countdown(bounds(period, moment).end, moment);
+  for (const period of ['month']) if ($('reset-' + period)) $('reset-' + period).textContent = countdown(bounds(period, moment).end, moment);
   if (activeDay !== dateKey(moment)) {
     activeDay = dateKey(moment); historyPage = 0;
     setRange(); renderCounts(); renderHistory();
@@ -56,12 +56,14 @@ async function refresh() {
     const body = await result.json();
     if (!body.snapshot || !Array.isArray(body.snapshot.daily) || !Number.isFinite(Date.parse(body.serverTime))) throw new Error('Invalid response');
     response = body; snapshot = body.snapshot; offset = Date.parse(body.serverTime) - Date.now();
-    renderCounts(); renderHistory(); renderQueries(); tick();
     clearTimeout(retryTimer);
     if (body.refreshing && document.visibilityState === 'visible') retryTimer = setTimeout(refresh, 10_000);
-  } catch {
+  } catch (error) {
+    console.error(error);
     $('source-status').textContent = `Could not reach the statistics service. Showing the retained snapshot from ${snapshot.fetchedAt}, through ${snapshot.latestDate} UTC.`;
   } finally { pendingFetch = false; $('refresh-counts').disabled = false; }
+  // Render outside the network try, so a display bug is never reported as a source outage.
+  renderCounts(); renderHistory(); renderQueries(); tick();
 }
 
 function setRange() {

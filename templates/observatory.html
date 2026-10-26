@@ -8,9 +8,9 @@
   <meta name="theme-color" content="#101410">
   <link rel="canonical" href="https://requeststoken.org/observatory">
   <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/static/css/site.css">
-  <link rel="stylesheet" href="/static/css/observatory.css">
-  <script type="module" src="/static/js/observatory.mjs"></script>
+  <link rel="stylesheet" href="/static/css/site.css?v={{ asset_version }}">
+  <link rel="stylesheet" href="/static/css/observatory.css?v={{ asset_version }}">
+  <script type="module" src="/static/js/observatory.mjs?v={{ asset_version }}"></script>
 </head>
 <body class="observatory" id="top">
   <a class="skip" href="#content">Skip to content</a>
@@ -33,8 +33,8 @@
       <div class="obs-counters">
         {% for period, label in [('day','Latest day'),('week','Last 7 days'),('month','This month'),('lifetime','Historical total')] %}
         <article class="obs-counter{% if period == 'lifetime' %} obs-counter-total{% endif %}"><h3>{{ label }}</h3>
-          <p class="obs-number" id="count-{{ period }}">{% if period == 'lifetime' %}{{ '{:,}'.format(downloads.snapshot.rawTotal) }}{% else %}Pending{% endif %}</p>
-          {% if period in ('day','week') %}<p class="obs-muted" id="when-{{ period }}">—</p>
+          <p class="obs-number" id="count-{{ period }}">{% if period == 'lifetime' %}{{ '{:,}'.format(downloads.snapshot.rawTotal) }}{% elif period in ('day','week') and recent[period] %}{{ '{:,}'.format(recent[period].downloads) }}{% else %}Pending{% endif %}</p>
+          {% if period in ('day','week') %}<p class="obs-muted" id="when-{{ period }}">{% if period == 'day' and recent.day %}{{ recent.day.date }} UTC · latest reported day{% elif period == 'week' and recent.week %}{{ recent.week.start }} – {{ recent.week.end }} UTC{% else %}No reported day yet{% endif %}</p>
           {% elif period != 'lifetime' %}<p class="obs-muted">Next period <span id="reset-{{ period }}">—</span> <span class="obs-utc">UTC</span></p>
           {% else %}<p class="obs-muted" id="total-coverage">From {{ downloads.snapshot.firstDate }} · incomplete coverage</p>{% endif %}
         </article>

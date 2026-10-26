@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
+from datetime import date, timedelta
 import logging
 from concurrent.futures import ThreadPoolExecutor
 
@@ -42,6 +44,49 @@ def safe_json(data) -> str:
     return text.replace("&", "\\u0026").replace("<", "\\u003c").replace(">", "\\u003e")
 
 
+class RevalidateAssets:
+    """Make browsers revalidate JS and CSS so a deploy never mixes old scripts with new pages."""
+
+    def __init__(self, app):
+        self.app = app
+
+    async def __call__(self, scope, receive, send):
+        path = scope.get("path", "") if scope.get("type") == "http" else ""
+        if not path.startswith("/static/") or not path.endswith((".js", ".mjs", ".css")):
+            return await self.app(scope, receive, send)
+
+        async def wrapped(message):
+            if message["type"] == "http.response.start":
+                headers = [(k, v) for k, v in message.get("headers", []) if k.lower() != b"cache-control"]
+                headers.append((b"cache-control", b"no-cache"))
+                message = {**message, "headers": headers}
+            await send(message)
+
+        return await self.app(scope, receive, wrapped)
+
+
+def _asset_version() -> str:
+    digest = hashlib.sha256()
+    for path in sorted((ROOT / "static" / "css").glob("*.css")) + sorted((ROOT / "static" / "js").glob("*.mjs")):
+        digest.update(path.read_bytes())
+    return digest.hexdigest()[:10]
+
+
+def recent_counts(snapshot: dict) -> dict:
+    """Latest reported day and the 7 days ending on it, from reported rows only."""
+    rows = {row["date"]: row["downloads"] for row in snapshot.get("daily", [])}
+    latest = snapshot.get("latestDate")
+    if latest not in rows:
+        return {"day": None, "week": None}
+    end = date.fromisoformat(latest)
+    days = [(end - timedelta(days=i)).isoformat() for i in range(7)]
+    present = [rows[d] for d in days if d in rows]
+    return {
+        "day": {"date": latest, "downloads": rows[latest]},
+        "week": {"start": days[-1], "end": latest, "downloads": sum(present), "available": len(present)},
+    }
+
+
 def create_app(services: Services | None = None, observatory: DownloadObservatory | None = None) -> responder.API:
     services = services or Services()
     observatory = observatory or DownloadObservatory()
@@ -52,6 +97,8 @@ def create_app(services: Services | None = None, observatory: DownloadObservator
         sessions=False,
         security_headers={"content_security_policy": _CSP},
     )
+    api.add_middleware(RevalidateAssets)
+    asset_version = _asset_version()
 
     @api.route("/")
     def home(req, resp):
@@ -108,6 +155,7 @@ def create_app(services: Services | None = None, observatory: DownloadObservator
         resp.headers["Cache-Control"] = "no-store"
         resp.render(
             "observatory.html", downloads=downloads, adoption=adoption,
+            recent=recent_counts(downloads["snapshot"]), asset_version=asset_version,
             downloads_json=safe_json(downloads), adoption_json=safe_json(adoption),
             categories=sorted({entry["category"] for entry in adoption["entries"]}),
             organization_count=len({entry["organization"] for entry in adoption["entries"]}),
