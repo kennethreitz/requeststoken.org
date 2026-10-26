@@ -97,6 +97,7 @@ def create_app(services: Services | None = None, observatory: DownloadObservator
         sessions=False,
         security_headers={"content_security_policy": _CSP},
         trust_proxy_headers=True,  # behind Traefik
+        metrics_route="/metrics",
         request_id=True,
     )
     api.add_middleware(RevalidateAssets)

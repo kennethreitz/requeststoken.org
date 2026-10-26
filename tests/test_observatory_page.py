@@ -21,3 +21,14 @@ def test_page_renders_recent_cards_and_versioned_assets(monkeypatch):
     assert "latest reported day" in html
     assert "/static/js/observatory.mjs?v=" in html
     assert client.get("/static/js/observatory.mjs").headers["cache-control"] == "no-cache"
+
+
+def test_metrics_route_exposes_prometheus_counters(monkeypatch):
+    monkeypatch.delenv("REDIS_URL", raising=False)
+    client = TestClient(create_app())
+    assert client.get("/health").status_code == 200
+    response = client.get("/metrics")
+    assert response.status_code == 200
+    assert response.headers["content-type"].startswith("text/plain")
+    assert "# TYPE responder_requests_total counter" in response.text
+    assert 'path="/health",status="200"' in response.text
