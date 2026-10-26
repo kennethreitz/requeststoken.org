@@ -97,6 +97,7 @@ def test_about_section_links_context_and_dna():
     assert "Kenneth’s open-source genome data on GitHub" in html and "My open-source" not in html
     assert html.index("Written about Kenneth") < html.index("Other interesting reading") < html.index("lyndsysimon.com/posts/the_future_of_python/")
     assert html.index("Other interesting reading") < html.index("Pieces on Python’s past and future") < html.index("lyndsysimon.com")
+    assert html.index("2012/6/22/hate-hate-hate") < html.index("lyndsysimon.com") < html.index("lukasz.langa.pl") < html.index("2024/10/14/mixing-oss")
     assert "06 — Disclaimer" in html and "largest holder" in html
 
 
