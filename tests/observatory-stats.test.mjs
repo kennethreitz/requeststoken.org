@@ -55,3 +55,21 @@ test('latest day and trailing week use reported data only', () => {
   assert.equal(latestDay({ ...s, daily: [] }), null);
   assert.equal(trailingWeek({ ...s, daily: [] }), null);
 });
+
+test('log and linear chart scales stay finite and keep gaps', async () => {
+  const { scaleDomain, scaleY, logTicks, tickLabel } = await import('../static/js/observatory-stats.mjs');
+  const values = [0, null, 201232, NaN, 34_806_193, 429_300_000];
+  const log = scaleDomain(values, 'log');
+  assert.deepEqual([log.min, log.max], [1e5, 1e9]);
+  assert.deepEqual(logTicks(log).map(tickLabel), ['100K', '1M', '10M', '100M', '1B']);
+  assert.equal(scaleY(0, log), null); assert.equal(scaleY(-5, log), null);
+  assert.equal(scaleY(null ?? NaN, log), null); assert.equal(scaleY(NaN, log), null);
+  assert.equal(scaleY(1e5, log), 194); assert.equal(scaleY(1e9, log), 25);
+  assert.ok(Math.abs(scaleY(1e7, log) - (194 + 25) / 2) < 1e-9);
+  const lin = scaleDomain(values, 'linear');
+  assert.deepEqual([lin.min, lin.max], [0, 429_300_000]);
+  assert.equal(scaleY(0, lin), 194); assert.equal(scaleY(429_300_000, lin), 25);
+  assert.deepEqual(scaleDomain([null, 0], 'log'), { mode: 'log', min: 1, max: 10 });
+  assert.deepEqual(scaleDomain([5, 5], 'log'), { mode: 'log', min: 1, max: 10 });
+  assert.deepEqual(logTicks({ min: 1, max: 1000 }).map(tickLabel), ['1', '10', '100', '1K']);
+});

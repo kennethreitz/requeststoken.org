@@ -1,4 +1,4 @@
-import { DAY, bounds, countdown, dateKey, dateTime, historyCSV, historyRows, latestDay, missingDays, periodTotal, shortDate, trailingWeek } from './observatory-stats.mjs?v=4';
+import { DAY, bounds, countdown, dateKey, dateTime, historyCSV, historyRows, latestDay, missingDays, periodTotal, logTicks, scaleDomain, scaleY, shortDate, tickLabel, trailingWeek } from './observatory-stats.mjs?v=5';
 
 const $ = (id) => document.getElementById(id);
 const format = (value) => value === null ? 'Pending' : value.toLocaleString('en-US');
@@ -96,6 +96,22 @@ function renderHistory() {
   $('export-history').disabled = !filteredHistory.length;
   renderChart([...filteredHistory].reverse());
 }
+let chartScale = (() => {
+  const fromUrl = new URLSearchParams(location.search).get('scale');
+  let stored = null; try { stored = localStorage.getItem('observatory-scale'); } catch {}
+  return [fromUrl, stored].find((v) => v === 'log' || v === 'linear') || 'linear';
+})();
+function setScale(mode) {
+  chartScale = mode;
+  for (const b of document.querySelectorAll('#history-scale button')) b.setAttribute('aria-pressed', String(b.dataset.scale === mode));
+  try { localStorage.setItem('observatory-scale', mode); } catch {}
+  const url = new URL(location.href);
+  if (mode === 'log') url.searchParams.set('scale', 'log'); else url.searchParams.delete('scale');
+  history.replaceState(null, '', url);
+  $('chart-description').textContent = `${mode === 'log' ? 'Logarithmic' : 'Linear'} scale. Missing dates are gaps. Exact values appear in the history table.`;
+  renderChart([...filteredHistory].reverse());
+}
+for (const b of document.querySelectorAll('#history-scale button')) b.addEventListener('click', () => setScale(b.dataset.scale));
 function renderChart(rows) {
   const svg = $('history-chart');
   for (const child of [...svg.children]) if (!['title', 'desc'].includes(child.localName)) child.remove();
@@ -105,11 +121,17 @@ function renderChart(rows) {
     if (text !== undefined) child.textContent = text;
     svg.append(child); return child;
   };
-  const max = Math.max(1, ...rows.map((r) => r.downloads ?? 0));
+  const domain = scaleDomain(rows.map((r) => r.downloads), chartScale);
   element('line', { x1: 65, x2: 975, y1: 194, y2: 194, class: 'chart-axis' });
   element('line', { x1: 65, x2: 975, y1: 25, y2: 25, class: 'chart-axis' });
   const compact = (v) => Intl.NumberFormat('en-US', { notation: 'compact', maximumFractionDigits: 1 }).format(v);
-  element('text', { x: 5, y: 30 }, compact(max)); element('text', { x: 5, y: 198 }, '0');
+  if (domain.mode === 'log') {
+    for (const t of logTicks(domain)) {
+      const y = scaleY(t, domain);
+      if (y > 25.5 && y < 193.5) element('line', { x1: 65, x2: 975, y1: y, y2: y, class: 'chart-grid' });
+      element('text', { x: 5, y: y + 4 }, tickLabel(t));
+    }
+  } else { element('text', { x: 5, y: 30 }, compact(domain.max)); element('text', { x: 5, y: 198 }, '0'); }
   let segment = [];
   const draw = () => {
     if (segment.length === 1) { const [cx, cy] = segment[0].split(','); element('circle', { cx, cy, r: 3 }); }
@@ -117,8 +139,9 @@ function renderChart(rows) {
     segment = [];
   };
   rows.forEach((r, i) => {
-    if (r.downloads === null) { draw(); return; }
-    const x = 65 + i / Math.max(1, rows.length - 1) * 910, y = 194 - r.downloads / max * 169;
+    const y = scaleY(r.downloads ?? NaN, domain);
+    if (y === null) { draw(); return; }
+    const x = 65 + i / Math.max(1, rows.length - 1) * 910;
     segment.push(`${x.toFixed(2)},${y.toFixed(2)}`);
   });
   draw();
@@ -208,7 +231,7 @@ $('project-dialog').addEventListener('click', (event) => {
 });
 $('project-dialog').addEventListener('close', () => dialogOpener?.focus());
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { tick(); refresh(); } else clearTimeout(retryTimer); });
-tick(); renderQueries(); renderProjects();
+tick(); setScale(chartScale); renderQueries(); renderProjects();
 setInterval(tick, 1000);
 setInterval(() => { if (document.visibilityState === 'visible') refresh(); }, 300_000);
 if (response.refreshing) retryTimer = setTimeout(refresh, 10_000);

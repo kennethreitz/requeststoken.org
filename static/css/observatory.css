@@ -106,3 +106,10 @@
 .api-docs .api-fields li { break-inside: avoid; margin: 0 0 .3rem; }
 .api-docs details summary { cursor: pointer; }
 .api-docs .api-example { overflow-x: auto; padding: 1rem; margin-top: 1rem; background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.08); border-radius: 8px; font-size: .85rem; }
+.obs-controls .obs-scale { display: flex; flex-direction: column; flex: 0 1 150px; gap: .4rem; color: var(--muted); font-size: .85rem; }
+.obs-segmented { display: flex; }
+.obs-segmented button { flex: 1; border-radius: 0; }
+.obs-segmented button:first-child { border-radius: 6px 0 0 6px; }
+.obs-segmented button:last-child { border-radius: 0 6px 6px 0; margin-left: -1px; }
+.obs-segmented button[aria-pressed="true"] { color: var(--bg, #101410); background: var(--gold); border-color: var(--gold); }
+.obs-chart .chart-grid { stroke: var(--line); stroke-width: 1; stroke-dasharray: 2 4; opacity: .6; }

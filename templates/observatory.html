@@ -51,6 +51,7 @@
         <label>Group by<select id="history-period"><option value="day">Day</option><option value="week">Week</option><option value="month">Month</option></select></label>
         <label>Range<select id="history-range"><option value="30">Last 30 days</option><option value="90">Last 90 days</option><option value="365">Last year</option><option value="all">All dates</option><option value="custom">Custom dates</option></select></label>
         <label>From<input id="history-from" type="date"></label><label>To<input id="history-to" type="date"></label>
+        <div class="obs-scale"><span id="history-scale-label">Scale</span><div id="history-scale" class="obs-segmented" role="group" aria-labelledby="history-scale-label"><button type="button" data-scale="linear" aria-pressed="true">Linear</button><button type="button" data-scale="log" aria-pressed="false">Log</button></div></div>
       </div>
       <p id="history-error" class="obs-warning" role="status" hidden></p>
       <figure class="obs-chart"><svg id="history-chart" viewBox="0 0 1000 240" role="img" aria-labelledby="chart-title chart-description"><title id="chart-title">Recorded Requests downloads</title><desc id="chart-description">Missing dates are gaps. Exact values appear in the history table.</desc></svg><figcaption class="obs-fine">Source-reported counts. Gaps stay unknown; open or incomplete periods are labeled in the table.</figcaption></figure>
