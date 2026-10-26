@@ -88,4 +88,5 @@ def test_about_section_links_context_and_dna():
     assert 'id="about"' in html and 'href="#about"' in html
     assert 'href="https://context.kennethreitz.org"' in html
     assert "https://github.com/kennethreitz/context/tree/master/dna" in html
+    assert "jtushman.github.io/blog/2013/05/22/kenneth-reitz-should-be-a-millionaire/" in html
     assert "06 — Disclaimer" in html and "largest holder" in html
