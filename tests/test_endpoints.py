@@ -322,7 +322,8 @@ def test_group_chat_join_link():
     html = pathlib.Path("templates/index.html").read_text()
     assert html.count('id="chat"') == 1
     assert 'href="https://x.com/i/chat/group_join/g2113555281518977367/54IJSMh16G"' in html
-    assert "Join the group chat" in html and "DM @kennethreitz42" in html
+    assert "Join the group chat" in html
+    assert "DM @kennethreitz42" not in html and "If the link doesn" not in html and 'class="chat-alt"' not in html
     assert "no Telegram and no Discord" not in html
     assert 'class="chat-join" id="chat-telegram" href="https://t.me/+dz8vzHYMS78xMzA1"' in html
     assert "Join the Telegram group" in html
