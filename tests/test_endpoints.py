@@ -334,3 +334,10 @@ def test_group_chat_join_link():
     assert "There is no Discord" in html and "the real links are the two on this page" in html
     assert html.count('class="chat-join"') == 2
     assert "never DM you first" in html
+
+
+def test_observatory_link_is_a_button():
+    import pathlib
+    html = pathlib.Path("templates/index.html").read_text()
+    assert '<a class="obs-cta" href="/observatory">Explore download history and project usage →</a>' in html
+    assert ".obs-cta {" in pathlib.Path("static/css/site.css").read_text()

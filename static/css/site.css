@@ -780,3 +780,9 @@ h2:hover .anchor, h3:hover .anchor, .anchor:focus-visible { opacity: 0.8; }
 .about-cta { margin: 1rem 0 0; }
 .about-primary { display: inline-block; padding: .6rem 1rem; border: 1px solid var(--gold); border-radius: 6px; color: var(--gold); text-decoration: none; font-weight: 600; }
 .about-primary:hover, .about-primary:focus-visible { background: var(--gold); color: var(--bg, #111); }
+
+/* Observatory call to action, matching the group chat join buttons */
+.obs-cta-row { margin: 1.4rem 0 1.8rem; }
+.obs-cta { display: inline-block; max-width: 100%; padding: 0.7rem 1.3rem; border-radius: 999px; background: var(--gold); color: #14120c; font-weight: 600; text-decoration: none; line-height: 1.35; }
+.obs-cta:hover { filter: brightness(1.08); }
+.obs-cta:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
