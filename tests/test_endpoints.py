@@ -324,7 +324,12 @@ def test_group_chat_join_link():
     assert 'href="https://x.com/i/chat/group_join/g2113555281518977367/54IJSMh16G"' in html
     assert "Join the group chat" in html and "DM @kennethreitz42" in html
     assert "no Telegram and no Discord" not in html
-    assert 'id="chat-telegram" href="https://t.me/+On-0RCC4YfE2Yjdl"' in html
-    assert "There is no Discord" in html and "the only real links are on this page" in html
-    assert html.count('class="chat-join"') == 1
+    assert 'class="chat-join" id="chat-telegram" href="https://t.me/+dz8vzHYMS78xMzA1"' in html
+    assert "Join the Telegram group" in html
+    assert "t.me/+On-0RCC4YfE2Yjdl" not in html
+    assert "X is home" not in html and "very experimental" not in html
+    assert "the only real links" not in html
+    assert "gathers in two places: a group chat on X and a Telegram group" in html
+    assert "There is no Discord" in html and "the real links are the two on this page" in html
+    assert html.count('class="chat-join"') == 2
     assert "never DM you first" in html
