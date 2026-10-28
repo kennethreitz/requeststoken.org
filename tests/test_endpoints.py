@@ -362,7 +362,7 @@ def test_other_projects_list():
     import pathlib
     html = pathlib.Path("templates/index.html").read_text()
     block = html[html.index("<h3>Other projects by Kenneth</h3>"):html.index("<h3>Written about Kenneth</h3>")]
-    for href in ("https://pytheory.org", "https://interpretations.kennethreitz.org", "https://kjvstudy.org", "https://kennethreitz.org", "https://context.kennethreitz.org"):
+    for href in ("https://pytheory.org", "https://interpretations.kennethreitz.org", "https://kjvstudy.org", "https://kennethreitz.org", "https://github.com/kennethreitz"):
         assert f'href="{href}"' in block
     assert html.index("05 — About") < html.index("<h3>Other projects by Kenneth</h3>")
     assert "short-version" not in html
@@ -372,6 +372,8 @@ def test_other_projects_source_links():
     import pathlib
     html = pathlib.Path("templates/index.html").read_text()
     block = html[html.index("<h3>Other projects by Kenneth</h3>"):html.index("<h3>Written about Kenneth</h3>")]
-    assert "Each one’s source is public on GitHub. All but the family index carry an open-source license (MIT or ISC)." in block
-    for r in ("pytheory", "interpretations", "kjvstudy.org", "kennethreitz.org", "context"):
+    assert "All open source: each project’s source is public on GitHub under an MIT or ISC license." in block
+    assert 'href="https://github.com/kennethreitz" target="_blank"' in block
+    assert "context.kennethreitz.org" not in block and "kennethreitz/context" not in block
+    for r in ("pytheory", "interpretations", "kjvstudy.org", "kennethreitz.org"):
         assert f'href="https://github.com/kennethreitz/{r}" target="_blank" rel="noopener noreferrer">source</a>' in block
