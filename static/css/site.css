@@ -786,3 +786,7 @@ h2:hover .anchor, h3:hover .anchor, .anchor:focus-visible { opacity: 0.8; }
 .obs-cta { display: inline-block; max-width: 100%; padding: 0.7rem 1.3rem; border-radius: 999px; background: var(--gold); color: #14120c; font-weight: 600; text-decoration: none; line-height: 1.35; }
 .obs-cta:hover { filter: brightness(1.08); }
 .obs-cta:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
+
+/* Other projects by Kenneth */
+.other-projects { margin: 0 0 1.4rem; padding-left: 1.1rem; }
+.other-projects li { margin: 0.45rem 0; }

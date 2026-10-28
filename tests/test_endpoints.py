@@ -356,3 +356,13 @@ def test_about_order_and_community_links():
     hrefs = [l["href"] for l in PRIMARY_LINKS]
     assert "https://t.me/+dz8vzHYMS78xMzA1" in hrefs
     assert "https://x.com/i/chat/group_join/g2113555281518977367/54IJSMh16G" in hrefs
+
+
+def test_other_projects_list():
+    import pathlib
+    html = pathlib.Path("templates/index.html").read_text()
+    block = html[html.index("<h3>Other projects by Kenneth</h3>"):html.index("<h3>Written about Kenneth</h3>")]
+    for href in ("https://pytheory.org", "https://interpretations.kennethreitz.org", "https://kjvstudy.org", "https://kennethreitz.org", "https://context.kennethreitz.org"):
+        assert f'href="{href}"' in block
+    assert html.index("05 — About") < html.index("<h3>Other projects by Kenneth</h3>")
+    assert "short-version" not in html
