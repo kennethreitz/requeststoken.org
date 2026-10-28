@@ -341,3 +341,18 @@ def test_observatory_link_is_a_button():
     html = pathlib.Path("templates/index.html").read_text()
     assert '<a class="obs-cta" href="/observatory">Explore download history and project usage →</a>' in html
     assert ".obs-cta {" in pathlib.Path("static/css/site.css").read_text()
+
+
+def test_about_order_and_community_links():
+    import pathlib
+    from requeststoken.config import PRIMARY_LINKS
+    html = pathlib.Path("templates/index.html").read_text()
+    order = ["<h3>Written about Kenneth</h3>", "<h3>Talks</h3>", "<h3>Other interesting reading</h3>", "<h3>Family history</h3>", "<h3>Open-source genome data</h3>", 'class="fine">Source:']
+    idx = [html.index(h) for h in order]
+    assert idx == sorted(idx)
+    assert html.index("<h3>Talks</h3>") < html.index("skYBOXE02OQ") < html.index("bpZS9ehw98k") < html.index("<h3>Other interesting reading</h3>")
+    assert "<h3>Lineage</h3>" not in html
+    assert '<a href="#chat">Community</a>' in html
+    hrefs = [l["href"] for l in PRIMARY_LINKS]
+    assert "https://t.me/+dz8vzHYMS78xMzA1" in hrefs
+    assert "https://x.com/i/chat/group_join/g2113555281518977367/54IJSMh16G" in hrefs

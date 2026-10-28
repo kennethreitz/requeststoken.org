@@ -43,6 +43,16 @@ PRIMARY_LINKS = (
         "note": "The code for this site",
     },
     {
+        "label": "Group chat on X",
+        "href": "https://x.com/i/chat/group_join/g2113555281518977367/54IJSMh16G",
+        "note": "Where the community gathers",
+    },
+    {
+        "label": "Telegram group",
+        "href": "https://t.me/+dz8vzHYMS78xMzA1",
+        "note": "Where the community gathers",
+    },
+    {
         "label": "DexScreener",
         "href": DEX_PAGE,
         "note": "Market pair for this contract",
