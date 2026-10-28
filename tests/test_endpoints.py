@@ -366,3 +366,12 @@ def test_other_projects_list():
         assert f'href="{href}"' in block
     assert html.index("05 — About") < html.index("<h3>Other projects by Kenneth</h3>")
     assert "short-version" not in html
+
+
+def test_other_projects_source_links():
+    import pathlib
+    html = pathlib.Path("templates/index.html").read_text()
+    block = html[html.index("<h3>Other projects by Kenneth</h3>"):html.index("<h3>Written about Kenneth</h3>")]
+    assert "Each one’s source is public on GitHub. All but the family index carry an open-source license (MIT or ISC)." in block
+    for r in ("pytheory", "interpretations", "kjvstudy.org", "kennethreitz.org", "context"):
+        assert f'href="https://github.com/kennethreitz/{r}" target="_blank" rel="noopener noreferrer">source</a>' in block
