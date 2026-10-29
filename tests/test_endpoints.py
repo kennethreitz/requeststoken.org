@@ -397,3 +397,10 @@ def test_faq_help_safety_updates_origin():
     assert idx == sorted(idx)
     assert "his wife needs a new car" in html and "short-version" not in html
     assert '<a href="#faq">FAQ</a>' in html
+
+
+def test_faq_whats_next():
+    import pathlib
+    html = pathlib.Path("templates/index.html").read_text()
+    assert "What’s next?" in html and "One day at a time." in html
+    assert html.index("What’s next?") < html.index('id="updates"')
