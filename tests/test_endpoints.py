@@ -377,3 +377,23 @@ def test_other_projects_source_links():
     assert "context.kennethreitz.org" not in block and "kennethreitz/context" not in block
     for r in ("pytheory", "interpretations", "kjvstudy.org", "kennethreitz.org"):
         assert f'href="https://github.com/kennethreitz/{r}" target="_blank" rel="noopener noreferrer">source</a>' in block
+
+
+def test_faq_help_safety_updates_origin():
+    import pathlib
+    html = pathlib.Path("templates/index.html").read_text()
+    assert html.index('id="intentions"') < html.index('id="faq"') < html.index('id="library"')
+    assert "Is there an official $requests X account?" in html
+    assert "@RequestsToken and requeststoken.com are not his" in html
+    assert "listed on this page first" in html
+    assert "What’s the utility?" in html and "no web3 features are planned" in html
+    assert "requests.py lived inside that project until he split it into its own repository in 2011" in html
+    assert html.index('tl-year">Origin') < html.index('tl-year">2011')
+    assert "How you can help" in html and "no raids, and no paid promoters" in html
+    assert "Real DexScreener profile updates are paid directly to DexScreener." in html
+    assert "bot or admin access" in html
+    dates = [d for d in ("2026-10-21", "2026-10-24", "2026-10-25", "2026-10-27", "2026-10-28")]
+    idx = [html.index(f'<time datetime="{d}">') for d in dates]
+    assert idx == sorted(idx)
+    assert "his wife needs a new car" in html and "short-version" not in html
+    assert '<a href="#faq">FAQ</a>' in html

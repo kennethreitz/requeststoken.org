@@ -111,4 +111,4 @@ def test_legacy_copy_edits():
     ):
         assert text in html
     assert 'href="https://github.com/kennethreitz/responder"' in html
-    assert html.count("legacy") == 2
+    assert html.count("legacy") == 3
