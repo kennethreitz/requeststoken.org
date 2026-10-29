@@ -392,7 +392,7 @@ def test_faq_help_safety_updates_origin():
     assert "How you can help" in html and "no raids, and no paid promoters" in html
     assert "Real DexScreener profile updates are paid directly to DexScreener." in html
     assert "bot or admin access" in html
-    dates = [d for d in ("2026-10-21", "2026-10-24", "2026-10-25", "2026-10-27", "2026-10-28")]
+    dates = [d for d in ("2026-10-21", "2026-10-24", "2026-10-25", "2026-10-27", "2026-10-28", "2026-10-29")]
     idx = [html.index(f'<time datetime="{d}">') for d in dates]
     assert idx == sorted(idx)
     assert "his wife needs a new car" in html and "short-version" not in html
