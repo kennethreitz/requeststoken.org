@@ -404,3 +404,12 @@ def test_faq_whats_next():
     html = pathlib.Path("templates/index.html").read_text()
     assert "What’s next?" in html and "One day at a time." in html
     assert html.index("What’s next?") < html.index('id="updates"')
+
+
+def test_telegram_rules_psf_fellow_safety():
+    import pathlib
+    html = pathlib.Path("templates/index.html").read_text()
+    assert "The five rules above apply in the Telegram group too." in html
+    assert "report it to the moderators rather than arguing" in html
+    assert "Fellow of the Python Software Foundation (PSF) and served one year on its board" in html
+    assert "nobody official promotes other tokens" in html
