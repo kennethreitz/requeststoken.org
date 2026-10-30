@@ -48,7 +48,7 @@ PRIMARY_LINKS = (
         "note": "Where the community gathers",
     },
     {
-        "label": "Telegram group",
+        "label": "Telegram group (read-only)",
         "href": "https://t.me/+dz8vzHYMS78xMzA1",
         "note": "Where the community gathers",
     },

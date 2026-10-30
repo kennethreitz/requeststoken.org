@@ -326,12 +326,12 @@ def test_group_chat_join_link():
     assert "DM @kennethreitz42" not in html and "If the link doesn" not in html and 'class="chat-alt"' not in html
     assert "no Telegram and no Discord" not in html
     assert 'class="chat-join" id="chat-telegram" href="https://t.me/+dz8vzHYMS78xMzA1"' in html
-    assert "Join the Telegram group" in html
+    assert "Telegram group (read-only)" in html
     assert "t.me/+On-0RCC4YfE2Yjdl" not in html
     assert "X is home" not in html and "very experimental" not in html
     assert "the only real links" not in html
-    assert "gathers in two places: a group chat on X and a Telegram group" in html
-    assert "There is no Discord" in html and "the real links are the two on this page" in html
+    assert "gathers in the group chat on X. The Telegram group is locked and read-only" in html
+    assert "There is no Discord" in html and "the real links are the ones on this page" in html
     assert html.count('class="chat-join"') == 2
     assert "never DM you first" in html
 
@@ -409,7 +409,8 @@ def test_faq_whats_next():
 def test_telegram_rules_psf_fellow_safety():
     import pathlib
     html = pathlib.Path("templates/index.html").read_text()
-    assert "The five rules above apply in the Telegram group too." in html
-    assert "report it to the moderators rather than arguing" in html
+    assert "The Telegram group is locked, so members can’t chat there." in html
+    assert '<time datetime="2026-10-30">' in html
+    assert "report spam or FUD to the moderators rather than arguing" in html
     assert "Fellow of the Python Software Foundation (PSF) and served one year on its board" in html
     assert "nobody official promotes other tokens" in html
