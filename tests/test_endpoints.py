@@ -441,3 +441,10 @@ def test_every_page_renders_with_nav_and_footer():
         if path != "/":
             assert f'href="{path}" aria-current="page"' in html
             assert "site.js" not in html
+
+
+def test_swirl_logo_removed():
+    import pathlib
+    for f in pathlib.Path("templates").glob("*.html"):
+        text = f.read_text()
+        assert "M46 11c9" not in text and 'cx="49" cy="12"' not in text, f

@@ -117,7 +117,6 @@ h2:hover .anchor, h3:hover .anchor, .anchor:focus { opacity: 1; }
 }
 .masthead-bar { display: flex; align-items: center; gap: 1.5rem; min-height: 4rem; }
 .brand { display: inline-flex; align-items: center; gap: 0.5rem; color: var(--ink); text-decoration: none; flex: none; }
-.brand svg { width: 1.9rem; color: var(--gold); }
 .brand-word { font: italic 560 1.35rem/1 var(--serif); }
 .brand-dollar { color: var(--gold); font-style: normal; font-family: var(--mono); font-size: 0.85em; margin-right: 0.04em; }
 .mainnav { margin-left: auto; overflow-x: auto; scrollbar-width: none; mask-image: linear-gradient(90deg, #000 88%, transparent); }
