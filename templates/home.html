@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% from "_macros.html" import x, ext %}
+{% block content %}
+<section class="hero" id="hero" aria-label="$requests">
+  <div class="shell hero-grid">
+    <div class="hero-copy">
+      <p class="kicker">Solana community token</p>
+      <h1><span class="dollar">$</span>requests</h1>
+      <p class="lede">Named for the Python HTTP library Kenneth Reitz created. Creator fees from this coin are directed to him.</p>
+      <p class="deck">This page is a public record of what the coin is for, kept in the spirit of a library that has served people for fifteen years. What is known is written plainly, and every claim links to something you can check on chain or on PyPI. Nothing here is an offer or a promise.</p>
+      <div class="contract">
+        <span class="contract-label">Contract</span>
+        <code id="contract" class="contract-value">{{ contract }}</code>
+        <button type="button" class="copy" id="copy-contract" data-contract="{{ contract }}">Copy</button>
+      </div>
+      <p id="copy-status" class="visually-hidden" role="status"></p>
+      <ul class="link-row" aria-label="Market pages for this contract">
+        <li><a href="{{ dex_page }}" target="_blank" rel="noopener noreferrer">DexScreener</a></li>
+        <li><a href="{{ pump_page }}" target="_blank" rel="noopener noreferrer">pump.fun</a></li>
+        <li><a href="{{ fomo_page }}" target="_blank" rel="noopener noreferrer">fomo</a></li>
+      </ul>
+    </div>
+    <div class="hero-card" aria-label="Verify it yourself">
+      <a class="hero-logo" href="https://requests.readthedocs.io/" target="_blank" rel="noopener noreferrer"><img src="/static/img/requests-caduceus.webp" width="512" height="512" alt="Requests: HTTP for Humans logo"></a>
+      <ul class="trust-strip">
+        <li><a href="#lock"><span class="trust-k">Locked</span> 10.7% of supply until Feb 14, 2027</a> <a class="trust-src" href="https://solscan.io/account/BaCrGRdrxHrovQjEK8D4PmjWPVCbeaZUPRKvPJ4WW5vo" target="_blank" rel="noopener noreferrer">Solscan</a></li>
+        <li><a href="https://x.com/kennethreitz42" target="_blank" rel="noopener noreferrer"><span class="trust-k">Official X</span> @kennethreitz42</a></li>
+        <li><span><span class="trust-k">Only site</span> requeststoken.org</span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="band start" aria-labelledby="start-title">
+  <div class="shell">
+    <h2 id="start-title" class="eyebrow">Start here</h2>
+    <ul class="cards">
+      <li><a class="card" href="/community"><span class="card-path">/community</span><span class="card-title">Community</span><span class="card-text">Five rules, the group chat on X, and how you can help.</span></a></li>
+      <li><a class="card" href="/safety"><span class="card-path">/safety</span><span class="card-title">Safety</span><span class="card-text">Imposters, fake boosts, and the only official links.</span></a></li>
+      <li><a class="card" href="/faq"><span class="card-path">/faq</span><span class="card-title">FAQ</span><span class="card-text">The official account, the utility, and what’s next.</span></a></li>
+      <li><a class="card" href="/library"><span class="card-path">/library</span><span class="card-title">Requests</span><span class="card-text">The library, its history, and its download counts.</span></a></li>
+      <li><a class="card" href="/about"><span class="card-path">/about</span><span class="card-title">About Kenneth</span><span class="card-text">Who he is, what’s been written about him, and his talks.</span></a></li>
+      <li><a class="card" href="/updates"><span class="card-path">/updates</span><span class="card-title">Updates</span><span class="card-text">A short, dated record of what has changed.</span></a></li>
+    </ul>
+  </div>
+</section>
+
+<section class="band" id="intentions" aria-labelledby="intentions-title">
+  <div class="shell split">
+    <div class="prose">
+      <p class="eyebrow">Intentions</p>
+      <h2 id="intentions-title">What the coin is for <a class="anchor" href="#intentions" aria-label="Link to this section">#</a></h2>
+      <p>The coin is meant to celebrate and support open source, and the legacy of Requests. Transparency comes first. There is no sleight of hand.</p>
+      <p>Requests began as Kenneth’s library — “HTTP for Humans” — and it now lives on in the care of the Python Software Foundation at {{ ext("https://github.com/psf/requests", "github.com/psf/requests") }}. This token is a separate thing: a memecoin on Solana. It does not change the library, and the library does not back the token.</p>
+      <p>This page does not publish a roadmap, a price target, a buyback, or a burn.</p>
+      <div class="thesis" id="thesis">
+        <h3>The thesis, plainly</h3>
+        <ul>
+          <li>A community token named after Requests, HTTP for Humans.</li>
+          <li>Kenneth didn’t launch it. He is its largest holder, and he took over the listing to give it an honest home.</li>
+          <li>The community runs on <a href="/community#rules">five rules</a>.</li>
+          <li>Skin in the game: about 102.5M tokens (about 10.7% of supply) are <a href="#lock">locked on Streamflow</a>, non-cancelable, until Feb 14, 2027.</li>
+          <li>It is not an investment product. It is a small, thinly traded memecoin with no promises of price, returns, or a roadmap. Only put in what you’re fine losing.</li>
+        </ul>
+      </div>
+      <p class="fees" id="fees">Creator fees from trading go to Kenneth Reitz. He uses them in two ways: buying more $requests, and supporting his growing family (for example, his wife needs a new car). This is a plain disclosure, not a promise of buybacks, price support, or returns.</p>
+      <p>The official website is requeststoken.org. Since the community takeover on Oct 24, 2026, the DexScreener listing shows only requeststoken.org and @kennethreitz42.</p>
+      <p>The only official account is {{ x() }} on X. Anyone else claiming to speak for $requests is not official.</p>
+    </div>
+    <aside class="lock-card" id="lock" aria-labelledby="lock-title">
+      <p class="lock-kicker">Lock proof · Streamflow</p>
+      <h3 class="lock-head" id="lock-title">102,507,662.69 tokens locked until Feb 14, 2027 <a class="anchor" href="#lock" aria-label="Link to this section">#</a></h3>
+      <p class="fine">Kenneth’s own holding, about 10.7% of supply. It cannot be cancelled or transferred, and the full amount unlocks at once on February 14, 2027 at 05:00 UTC (midnight Eastern).</p>
+      <div class="lock-progress" id="lock-progress" data-start="2026-10-21T23:37:17Z" data-end="2027-02-14T05:00:00Z">
+        <progress class="lock-bar" max="1" value="{{ lock.fraction }}" aria-label="Time elapsed in the lock: {{ lock.percent }}%">{{ lock.percent }}%</progress>
+        <p class="lock-meta"><span>Locked Oct 21, 2026</span><span id="lock-left">{{ lock.label }}</span><span>Unlocks Feb 14, 2027</span></p>
+      </div>
+      <ul class="addr-list">
+      <li><span class="addr-label">Lock contract</span> <a class="addr" href="https://solscan.io/account/BaCrGRdrxHrovQjEK8D4PmjWPVCbeaZUPRKvPJ4WW5vo" target="_blank" rel="noopener noreferrer" title="BaCrGRdrxHrovQjEK8D4PmjWPVCbeaZUPRKvPJ4WW5vo">BaCr…W5vo</a> <button type="button" class="copy copy-sm" data-copy="BaCrGRdrxHrovQjEK8D4PmjWPVCbeaZUPRKvPJ4WW5vo" aria-label="Copy lock contract address">Copy</button></li>
+      <li><span class="addr-label">Escrow token account</span> <a class="addr" href="https://solscan.io/account/2yMGxLBWJ78JqLTRTyeS849Cr3xWn1qo9UvLa15wXHtT" target="_blank" rel="noopener noreferrer" title="2yMGxLBWJ78JqLTRTyeS849Cr3xWn1qo9UvLa15wXHtT">2yMG…XHtT</a> <button type="button" class="copy copy-sm" data-copy="2yMGxLBWJ78JqLTRTyeS849Cr3xWn1qo9UvLa15wXHtT" aria-label="Copy escrow token account address">Copy</button></li>
+      <li><span class="addr-label">Lock transaction</span> <a class="addr" href="https://solscan.io/tx/2gVXJKnhJ4gXDjPN15CCTXqyDwMkrtz9dBWQByYCxnsHG393QzSYiWjbRLAm7qCsgwbD66i1pk9mfJMfGC6MvoMa" target="_blank" rel="noopener noreferrer" title="2gVXJKnhJ4gXDjPN15CCTXqyDwMkrtz9dBWQByYCxnsHG393QzSYiWjbRLAm7qCsgwbD66i1pk9mfJMfGC6MvoMa">2gVX…voMa</a> <button type="button" class="copy copy-sm" data-copy="2gVXJKnhJ4gXDjPN15CCTXqyDwMkrtz9dBWQByYCxnsHG393QzSYiWjbRLAm7qCsgwbD66i1pk9mfJMfGC6MvoMa" aria-label="Copy lock transaction address">Copy</button></li>
+      <li><span class="addr-label">Sender and recipient wallet</span> <a class="addr" href="https://solscan.io/account/7u95Sd1MFmjUJ8ZS8gtZtgynpE9mHCQJwUwpD3r65238" target="_blank" rel="noopener noreferrer" title="7u95Sd1MFmjUJ8ZS8gtZtgynpE9mHCQJwUwpD3r65238">7u95…5238</a> <button type="button" class="copy copy-sm" data-copy="7u95Sd1MFmjUJ8ZS8gtZtgynpE9mHCQJwUwpD3r65238" aria-label="Copy sender and recipient wallet address">Copy</button></li>
+      <li><span class="addr-label">Streamflow program</span> <a class="addr" href="https://solscan.io/account/strmRqUCoQUgGUan5YhzUZa6KqdzwX5L6FpUxfmKg5m" target="_blank" rel="noopener noreferrer" title="strmRqUCoQUgGUan5YhzUZa6KqdzwX5L6FpUxfmKg5m">strm…Kg5m</a> <button type="button" class="copy copy-sm" data-copy="strmRqUCoQUgGUan5YhzUZa6KqdzwX5L6FpUxfmKg5m" aria-label="Copy streamflow program address">Copy</button></li>
+      </ul>
+    </aside>
+  </div>
+</section>
+
+<section class="band" id="market" aria-labelledby="market-title">
+  <div class="shell">
+    <p class="eyebrow">The market</p>
+    <h2 id="market-title">The pair, right now <a class="anchor" href="#market" aria-label="Link to this section">#</a></h2>
+    <p class="deck">Price, market cap, liquidity, volume, and 24-hour buys and sells for the contract above, from DexScreener’s public API. The first pair in that response is the one shown here. Read the numbers as information about the market.</p>
+    <p id="market-unavailable" class="unavailable" {% if token.available %}hidden{% endif %}>{{ token.detail or "Market data is temporarily unavailable." }}</p>
+    <dl class="stat-grid" id="market-grid" {% if not token.available %}hidden{% endif %}>
+      <div class="stat"><dt>Market cap</dt><dd id="stat-mcap">{{ token.market_cap_display }}</dd></div>
+      <div class="stat"><dt>Price</dt><dd id="stat-price">{{ token.price_display }}</dd><p class="fine" id="stat-native">{{ token.price_native_display }}</p></div>
+      <div class="stat"><dt>24h change</dt><dd id="stat-change" class="change {{ token.change_direction }}">{{ token.change_display }}</dd></div>
+      <div class="stat"><dt>Liquidity</dt><dd id="stat-liquidity">{{ token.liquidity_display }}</dd></div>
+      <div class="stat"><dt>24h volume</dt><dd id="stat-volume">{{ token.volume_display }}</dd></div>
+      <div class="stat"><dt>Buys / sells, 24h</dt><dd id="stat-activity">{{ token.activity_display }}</dd></div>
+    </dl>
+    <p class="pair-line"><a id="pair-link" href="{{ token.pair_url }}" target="_blank" rel="noopener noreferrer">View the pair on DexScreener</a> <span id="listed-on">{% if token.listed_on %}Pair listed {{ token.listed_on }}.{% endif %}</span></p>
+    <p class="pair-line" id="holders-line">Holder concentration: the 10 largest token accounts hold 42.0% of supply, including the PumpSwap pool (13.3%) and Kenneth’s lock escrow (10.7%); the other eight hold 18.0%. 388 accounts hold a balance. Source: Solana mainnet RPC, Token-2022 accounts for this mint, Oct 25, 2026 at 10:18 AM ET.</p>
+    <p class="pair-line" id="fomo-line">Also trade and follow on <a href="{{ fomo_page }}" target="_blank" rel="noopener noreferrer">fomo</a>.</p>
+    <p class="status" id="market-status">{{ token.status_display }}</p>
+  </div>
+</section>
+
+<section class="band disclaimer" id="disclaimer" aria-labelledby="disclaimer-title">
+  <div class="shell prose">
+    <p class="eyebrow">Disclaimer</p>
+    <h2 id="disclaimer-title">Disclaimer <a class="anchor" href="#disclaimer" aria-label="Link to this section">#</a></h2>
+    <p>Memecoins are highly speculative. This is not financial advice. There are no promises of price, returns, or value. Only spend what you can afford to lose.</p>
+    <p>Beware of impersonators, paid-trending pitches, and anyone who asks you to DM them about fees. The only official links are the ones listed on this site. Read the <a href="/safety">safety notes</a>.</p>
+  </div>
+</section>
+{% endblock %}
+{% block scripts %}<script src="/static/js/site.js?v={{ asset_version }}"></script>{% endblock %}

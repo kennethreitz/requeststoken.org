@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% from "_macros.html" import pagehead, x, ext %}
+{% block title %}Safety — requeststoken.org{% endblock %}
+{% block path %}/safety{% endblock %}
+{% block description %}How to spot $requests imposters and fake boosts, and the only official links.{% endblock %}
+{% block content %}
+{{ pagehead("/safety", "Safety", "Expect imposters. We’ll never DM you first.") }}
+<section class="band" id="imposters" aria-labelledby="imposters-title">
+  <div class="shell split">
+    <div class="prose">
+      <h2 id="imposters-title">What official people will never do <a class="anchor" href="#imposters" aria-label="Link to this section">#</a></h2>
+      <ul class="ticks ticks-warn">
+        <li>Kenneth will never DM you first. Anyone who does, claiming to be him, is an imposter.</li>
+        <li>Nobody official will ask for your wallet, or for bot or admin access.</li>
+        <li>Nobody official will ask you for money for a DexScreener or Telegram boost. Real DexScreener profile updates are paid directly to DexScreener.</li>
+        <li>Nobody else speaks for $requests or runs accounts for it, and nobody official promotes other tokens.</li>
+        <li>Beware of impersonators, paid-trending pitches, and anyone who asks you to DM them about fees.</li>
+      </ul>
+    </div>
+    <div class="panel panel-gold" id="official">
+      <h2 class="panel-h">The only official places</h2>
+      <ul class="ticks">
+        <li>Website: requeststoken.org</li>
+        <li>X account: {{ x() }}</li>
+        <li>Group chat: <a href="https://x.com/i/chat/group_join/g2113555281518977367/54IJSMh16G" target="_blank" rel="noopener noreferrer">on X</a></li>
+        <li>Telegram: <a href="https://t.me/+dz8vzHYMS78xMzA1" target="_blank" rel="noopener noreferrer">locked and read-only</a></li>
+      </ul>
+      <p class="fine">@RequestsToken and requeststoken.com are not his. There is no Discord. Treat any other Telegram or Discord as fake.</p>
+      <p class="fine">Contract <code class="wrap-any">{{ contract }}</code></p>
+    </div>
+  </div>
+</section>
+<section class="band disclaimer" id="disclaimer" aria-labelledby="disclaimer-title">
+  <div class="shell prose">
+    <h2 id="disclaimer-title">Disclaimer <a class="anchor" href="#disclaimer" aria-label="Link to this section">#</a></h2>
+    <p>Memecoins are highly speculative. This is not financial advice. There are no promises of price, returns, or value. Only spend what you can afford to lose.</p>
+    <p>Beware of impersonators, paid-trending pitches, and anyone who asks you to DM them about fees. The only official links are the ones listed on this site.</p>
+  </div>
+</section>
+{% endblock %}

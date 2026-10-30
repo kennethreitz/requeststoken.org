@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% from "_macros.html" import pagehead, ext %}
+{% block title %}Projects — requeststoken.org{% endblock %}
+{% block path %}/projects{% endblock %}
+{% block description %}Other open-source projects by Kenneth Reitz, with links to their source.{% endblock %}
+{% block content %}
+{{ pagehead("/projects", "Other projects by Kenneth", "All open source: each project’s source is public on GitHub under an MIT or ISC license.") }}
+<section class="band" id="projects" aria-labelledby="projects-title">
+  <div class="shell">
+    <h2 id="projects-title" class="eyebrow">Recent work</h2>
+    <ul class="projects other-projects">
+      <li class="project"><h3><a href="https://pytheory.org" target="_blank" rel="noopener noreferrer">PyTheory</a></h3><p>A Python library for exploring music theory, composing multi-part arrangements, and exporting them to MIDI, sheet music, or audio.</p><p class="project-src"><a href="https://github.com/kennethreitz/pytheory" target="_blank" rel="noopener noreferrer">source</a></p></li>
+      <li class="project"><h3><a href="https://interpretations.kennethreitz.org" target="_blank" rel="noopener noreferrer">Interpretations</a></h3><p>A 24-track album written entirely in Python, with every sound generated from code using PyTheory.</p><p class="project-src"><a href="https://github.com/kennethreitz/interpretations" target="_blank" rel="noopener noreferrer">source</a></p></li>
+      <li class="project"><h3><a href="https://kjvstudy.org" target="_blank" rel="noopener noreferrer">KJV Study</a></h3><p>A site for studying the King James Version Bible, with verse search, a topical index, study guides, and reading plans.</p><p class="project-src"><a href="https://github.com/kennethreitz/kjvstudy.org" target="_blank" rel="noopener noreferrer">source</a></p></li>
+      <li class="project"><h3><a href="https://kennethreitz.org" target="_blank" rel="noopener noreferrer">kennethreitz.org</a></h3><p>Kenneth’s own site and essays, on open source, AI collaboration, and building software for humans.</p><p class="project-src"><a href="https://github.com/kennethreitz/kennethreitz.org" target="_blank" rel="noopener noreferrer">source</a></p></li>
+      <li class="project"><h3><a href="https://github.com/kennethreitz" target="_blank" rel="noopener noreferrer">GitHub</a></h3><p>Kenneth’s GitHub profile, home to these projects and the rest of his open-source work.</p></li>
+    </ul>
+  </div>
+</section>
+<section class="band" id="known-for" aria-labelledby="known-title">
+  <div class="shell prose">
+    <h2 id="known-title">Known for</h2>
+    <p>Kenneth created {{ ext("https://github.com/psf/requests", "Requests") }} (now with the Python Software Foundation), {{ ext("https://github.com/kennethreitz/responder", "Responder") }} (which runs this site), httpbin.org, Pipenv, Records and Tablib. <a href="/library">Read about Requests</a>.</p>
+  </div>
+</section>
+{% endblock %}

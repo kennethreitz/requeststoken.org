@@ -1,0 +1,11 @@
+{% macro pagehead(method_path, title, lede="", id="page-title") -%}
+<header class="pagehead">
+  <div class="shell">
+    <p class="reqline" aria-hidden="true"><span class="verb">GET</span> {{ method_path }} <span class="ok">200 OK</span></p>
+    <h1 id="{{ id }}">{{ title }}</h1>
+    {% if lede %}<p class="pagehead-lede">{{ lede }}</p>{% endif %}
+  </div>
+</header>
+{%- endmacro %}
+{% macro x() -%}<a href="https://x.com/kennethreitz42" target="_blank" rel="noopener noreferrer">@kennethreitz42</a>{%- endmacro %}
+{% macro ext(href, text) -%}<a href="{{ href }}" target="_blank" rel="noopener noreferrer">{{ text }}</a>{%- endmacro %}

@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% from "_macros.html" import pagehead, x, ext %}
+{% block title %}FAQ — requeststoken.org{% endblock %}
+{% block path %}/faq{% endblock %}
+{% block description %}Plain answers about $requests: the official account, the utility, what’s next, who created it, creator fees, and the lock.{% endblock %}
+{% block content %}
+{{ pagehead("/faq", "Questions, answered plainly", "Short answers, using only what can be checked.") }}
+<section class="band" id="faq" aria-labelledby="faq-title">
+  <div class="shell faq">
+    <h2 id="faq-title" class="visually-hidden">FAQ</h2>
+    <details open id="official-account">
+      <summary><h3>Is there an official $requests X account?</h3></summary>
+      <p>Not yet. The only official account is {{ x() }}. @RequestsToken and requeststoken.com are not his. Any new account will be announced from @kennethreitz42 and listed on this page first.</p>
+    </details>
+    <details open id="utility">
+      <summary><h3>What’s the utility?</h3></summary>
+      <p>None is promised. The coin celebrates open source and the legacy of Requests. Kenneth is a web2 guy, and no web3 features are planned.</p>
+    </details>
+    <details open id="whats-next">
+      <summary><h3>What’s next?</h3></summary>
+      <p>One day at a time. No roadmap, no promises: just the site, the code, and the community, tended day by day.</p>
+    </details>
+    <details id="creator">
+      <summary><h3>Did Kenneth create the token?</h3></summary>
+      <p>No. Kenneth didn’t launch it. He is its largest holder, and he took over the listing to give it an honest home.</p>
+    </details>
+    <details id="library-relation">
+      <summary><h3>Is this the Requests library, or a PSF project?</h3></summary>
+      <p>No. The Requests library and this token are different things. This token is not a Python Software Foundation project. It does not change the library, and the library does not back the token. <a href="/library">More about the library</a>.</p>
+    </details>
+    <details id="fees">
+      <summary><h3>Where do creator fees go?</h3></summary>
+      <p>Creator fees from trading go to Kenneth Reitz. He uses them in two ways: buying more $requests, and supporting his growing family (for example, his wife needs a new car). This is a plain disclosure, not a promise of buybacks, price support, or returns.</p>
+    </details>
+    <details id="locked-supply">
+      <summary><h3>Is any supply locked?</h3></summary>
+      <p>Yes. About 102.5M tokens (about 10.7% of supply), Kenneth’s own holding, are locked on Streamflow, non-cancelable, until Feb 14, 2027. The <a href="/#lock">lock proof</a> links every address on Solscan.</p>
+    </details>
+    <details id="where-to-talk">
+      <summary><h3>Where do people talk?</h3></summary>
+      <p>In the group chat on X. The Telegram group is locked and read-only, and there is no Discord. See <a href="/community#chat">Community</a>.</p>
+    </details>
+    <details id="advice">
+      <summary><h3>Is this financial advice?</h3></summary>
+      <p>No. Memecoins are highly speculative. There are no promises of price, returns, or value. Only spend what you can afford to lose.</p>
+    </details>
+    <p class="more-link">Something changed? See <a href="/updates">recent updates</a>.</p>
+  </div>
+</section>
+{% endblock %}
