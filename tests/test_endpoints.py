@@ -1,6 +1,7 @@
 """JSON endpoint tests. Upstream HTTP is scripted; nothing here calls the network."""
 
 from __future__ import annotations
+from site_pages import site_source, site_html, TEMPLATES
 
 import json
 import threading
@@ -233,8 +234,11 @@ def test_homepage_renders_facts_figures_and_the_disclaimer():
     assert response.status_code == 200
     text = response.text
     assert CONTRACT in text
+    assert "1,000" in api.requests.get("/library").text
     assert "$101,143" in text
-    assert "1,000" in text
+    community = api.requests.get("/community").text
+    assert 'id="rules"' not in text and 'href="/community"' in text
+    text, home = community, text
     assert "Be cordial, or be on your way." in text
     assert "Stay risk averse." in text
     assert "Expect imposters. We’ll never DM you first." in text
@@ -242,7 +246,8 @@ def test_homepage_renders_facts_figures_and_the_disclaimer():
     assert "Optimize for social impact and sustainability." in text
     assert text.index("Stay risk averse.") < text.index("Build things for humans.") < text.index("Expect imposters.") < text.index("Optimize for social")
     assert 'href="https://kennethreitz.org/essays/2013-01-be_cordial_or_be_on_your_way"' in text
-    assert text.index('id="rules"') < text.index('id="intentions"')
+    assert text.index('id="rules"') < text.index('id="chat"')
+    text = home
     assert "February 14, 2027" in text
     assert "about 10.7%" in text
     assert "not financial advice" in text
@@ -272,7 +277,7 @@ def test_homepage_still_renders_when_upstreams_fail():
 
 def test_trust_strip_lock_card_and_timeline_markup():
     import pathlib
-    html = pathlib.Path("templates/index.html").read_text()
+    html = site_source()
     assert "marked to confirm" not in html
     assert 'class="trust-strip"' in html and "@kennethreitz42" in html
     assert 'id="lock-progress"' in html and 'data-end="2027-02-14T05:00:00Z"' in html
@@ -286,15 +291,17 @@ def test_trust_strip_lock_card_and_timeline_markup():
 
 def test_section_anchors():
     import pathlib
-    html = pathlib.Path("templates/index.html").read_text()
+    html = site_source()
     for anchor in ("hero", "rules", "chat", "intentions", "lock", "library", "heritage", "market", "disclaimer", "links"):
-        assert html.count(f'id="{anchor}"') == 1, anchor
+        assert html.count(f'id="{anchor}"') >= 1, anchor
+        for name in TEMPLATES:
+            assert pathlib.Path(f"templates/{name}.html").read_text().count(f'id="{anchor}"') <= 1, (name, anchor)
     for anchor in ("rules", "intentions", "lock", "library", "heritage", "market", "disclaimer", "links"):
         assert f'<a class="anchor" href="#{anchor}"' in html, anchor
-    for nav in ("#intentions", "#library", "#market", "#disclaimer"):
+    for nav in ("/community", "/faq", "/safety", "/updates", "/library", "/projects", "/about", "/observatory"):
         assert f'href="{nav}"' in html
-    css = pathlib.Path("static/css/site.css").read_text()
-    assert "scroll-margin-top" in css
+    css = pathlib.Path("static/css/rt.css").read_text()
+    assert "scroll-padding-top" in css
 
 
 def test_fomo_link():
@@ -302,15 +309,15 @@ def test_fomo_link():
     assert FOMO_PAGE == "https://fomo.family/tokens/solana/6ceuPfcE67PLs3Z6CbJpFpqNyAevVocP2zsDkbM1pump"
     assert any(link["href"] == FOMO_PAGE for link in PRIMARY_LINKS)
     import pathlib
-    html = pathlib.Path("templates/index.html").read_text()
+    html = site_source()
     assert "Also trade and follow on" in html
     assert html.count("{{ fomo_page }}") == 2
 
 
 def test_thesis_holders_and_listing_note():
     import pathlib
-    html = pathlib.Path("templates/index.html").read_text()
-    assert 'id="thesis"' in html and 'href="#rules">five rules' in html and 'href="#lock">' in html
+    html = site_source()
+    assert 'id="thesis"' in html and 'href="/community#rules">five rules' in html and 'href="#lock">' in html
     assert "didn’t launch it" in html and "largest holder" in html
     assert "his wife needs a new car" in html
     assert "DexScreener currently lists requeststoken.com" not in html
@@ -319,40 +326,41 @@ def test_thesis_holders_and_listing_note():
 
 def test_group_chat_join_link():
     import pathlib
-    html = pathlib.Path("templates/index.html").read_text()
+    html = site_source()
     assert html.count('id="chat"') == 1
     assert 'href="https://x.com/i/chat/group_join/g2113555281518977367/54IJSMh16G"' in html
     assert "Join the group chat" in html
     assert "DM @kennethreitz42" not in html and "If the link doesn" not in html and 'class="chat-alt"' not in html
     assert "no Telegram and no Discord" not in html
-    assert 'class="chat-join" id="chat-telegram" href="https://t.me/+dz8vzHYMS78xMzA1"' in html
+    assert 'class="chat-join btn" id="chat-telegram" href="https://t.me/+dz8vzHYMS78xMzA1"' in html
     assert "Telegram group (read-only)" in html
     assert "t.me/+On-0RCC4YfE2Yjdl" not in html
     assert "X is home" not in html and "very experimental" not in html
     assert "the only real links" not in html
     assert "gathers in the group chat on X. The Telegram group is locked and read-only" in html
     assert "There is no Discord" in html and "the real links are the ones on this page" in html
-    assert html.count('class="chat-join"') == 2
+    assert html.count('class="chat-join') == 2
     assert "never DM you first" in html
 
 
 def test_observatory_link_is_a_button():
     import pathlib
-    html = pathlib.Path("templates/index.html").read_text()
-    assert '<a class="obs-cta" href="/observatory">Explore download history and project usage →</a>' in html
-    assert ".obs-cta {" in pathlib.Path("static/css/site.css").read_text()
+    html = site_source()
+    assert '<a class="btn btn-primary obs-cta" href="/observatory">Explore download history and project usage →</a>' in html
+    assert ".btn-primary {" in pathlib.Path("static/css/rt.css").read_text()
 
 
 def test_about_order_and_community_links():
     import pathlib
     from requeststoken.config import PRIMARY_LINKS
-    html = pathlib.Path("templates/index.html").read_text()
-    order = ["<h3>Written about Kenneth</h3>", "<h3>Talks</h3>", "<h3>Other interesting reading</h3>", "<h3>Family history</h3>", "<h3>Open-source genome data</h3>", 'class="fine">Source:']
+    html = pathlib.Path("templates/about.html").read_text()
+    order = ['<h3 id="press">Written about Kenneth</h3>', '<h3 id="talks">Talks</h3>', "<h3 id=\"reading\">Other interesting reading</h3>", "<h3 id=\"family\">Family history</h3>", "<h3 id=\"genome\">Open-source genome data</h3>", 'class="fine">Source:']
     idx = [html.index(h) for h in order]
     assert idx == sorted(idx)
-    assert html.index("<h3>Talks</h3>") < html.index("skYBOXE02OQ") < html.index("bpZS9ehw98k") < html.index("<h3>Other interesting reading</h3>")
+    assert html.index('id="talks"') < html.index("skYBOXE02OQ") < html.index("bpZS9ehw98k") < html.index('id="reading"')
+    assert html.index('id="writing"') < html.index('id="press"') < html.index('id="family"')
     assert "<h3>Lineage</h3>" not in html
-    assert '<a href="#chat">Community</a>' in html
+    assert '("community", "/community", "Community")' in site_source()
     hrefs = [l["href"] for l in PRIMARY_LINKS]
     assert "https://t.me/+dz8vzHYMS78xMzA1" in hrefs
     assert "https://x.com/i/chat/group_join/g2113555281518977367/54IJSMh16G" in hrefs
@@ -360,18 +368,20 @@ def test_about_order_and_community_links():
 
 def test_other_projects_list():
     import pathlib
-    html = pathlib.Path("templates/index.html").read_text()
-    block = html[html.index("<h3>Other projects by Kenneth</h3>"):html.index("<h3>Written about Kenneth</h3>")]
+    html = site_source()
+    block = pathlib.Path("templates/projects.html").read_text()
+    assert "Other projects by Kenneth" in block
     for href in ("https://pytheory.org", "https://interpretations.kennethreitz.org", "https://kjvstudy.org", "https://kennethreitz.org", "https://github.com/kennethreitz"):
         assert f'href="{href}"' in block
-    assert html.index("05 — About") < html.index("<h3>Other projects by Kenneth</h3>")
+    assert 'href="/projects"' in pathlib.Path("templates/about.html").read_text()
     assert "short-version" not in html
 
 
 def test_other_projects_source_links():
     import pathlib
-    html = pathlib.Path("templates/index.html").read_text()
-    block = html[html.index("<h3>Other projects by Kenneth</h3>"):html.index("<h3>Written about Kenneth</h3>")]
+    html = site_source()
+    block = pathlib.Path("templates/projects.html").read_text()
+    assert "Other projects by Kenneth" in block
     assert "All open source: each project’s source is public on GitHub under an MIT or ISC license." in block
     assert 'href="https://github.com/kennethreitz" target="_blank"' in block
     assert "context.kennethreitz.org" not in block and "kennethreitz/context" not in block
@@ -381,8 +391,9 @@ def test_other_projects_source_links():
 
 def test_faq_help_safety_updates_origin():
     import pathlib
-    html = pathlib.Path("templates/index.html").read_text()
-    assert html.index('id="intentions"') < html.index('id="faq"') < html.index('id="library"')
+    html = site_source()
+    for name in ("home", "faq", "library", "updates", "safety", "community"):
+        assert pathlib.Path(f"templates/{name}.html").exists()
     assert "Is there an official $requests X account?" in html
     assert "@RequestsToken and requeststoken.com are not his" in html
     assert "listed on this page first" in html
@@ -394,23 +405,39 @@ def test_faq_help_safety_updates_origin():
     assert "bot or admin access" in html
     dates = [d for d in ("2026-10-21", "2026-10-24", "2026-10-25", "2026-10-27", "2026-10-28", "2026-10-29")]
     idx = [html.index(f'<time datetime="{d}">') for d in dates]
-    assert idx == sorted(idx)
+    assert idx == sorted(idx, reverse=True)
     assert "his wife needs a new car" in html and "short-version" not in html
-    assert '<a href="#faq">FAQ</a>' in html
+    assert '("faq", "/faq", "FAQ")' in html
 
 
 def test_faq_whats_next():
     import pathlib
-    html = pathlib.Path("templates/index.html").read_text()
+    html = site_source()
     assert "What’s next?" in html and "One day at a time." in html
-    assert html.index("What’s next?") < html.index('id="updates"')
+    faq = pathlib.Path("templates/faq.html").read_text()
+    assert faq.index("What’s next?") < faq.index('href="/updates"')
 
 
 def test_telegram_rules_psf_fellow_safety():
     import pathlib
-    html = pathlib.Path("templates/index.html").read_text()
+    html = site_source()
     assert "The Telegram group is locked, so members can’t chat there." in html
     assert '<time datetime="2026-10-30">' in html
     assert "report spam or FUD to the moderators rather than arguing" in html
     assert "Fellow of the Python Software Foundation (PSF) and served one year on its board" in html
     assert "nobody official promotes other tokens" in html
+
+
+def test_every_page_renders_with_nav_and_footer():
+    from site_pages import PAGES
+    api, _client = build({})
+    for path in PAGES:
+        response = api.requests.get(path)
+        assert response.status_code == 200, path
+        html = response.text
+        assert 'class="mainnav"' in html and 'id="links"' in html and CONTRACT in html
+        assert "not financial advice" in html.lower()
+        assert ' style="' not in html
+        if path != "/":
+            assert f'href="{path}" aria-current="page"' in html
+            assert "site.js" not in html

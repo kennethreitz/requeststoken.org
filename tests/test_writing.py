@@ -72,20 +72,22 @@ def test_cache_then_last_good_fallback_then_unavailable():
 
 def test_homepage_and_api_render_writing_and_survive_outage():
     client = TestClient(create_app(writing=Writing(fetch=lambda: FEED)))
-    html = client.get("/").text
+    html = client.get("/about").text
     assert 'id="writing"' in html and "Hello &amp; world" in html and "<script>alert" not in html
     assert "javascript:" not in html and "evil.example" not in html
     assert client.get("/api/writing").json()["posts"][0]["link"] == PINNED_URL
     assert "/api/writing" in client.get("/openapi.json").json()["paths"]
 
     offline = TestClient(create_app())
-    page = offline.get("/")
+    page = offline.get("/about")
     assert page.status_code == 200 and PINNED_URL in page.text and "More essays" in page.text
 
 
 def test_about_section_links_context_and_dna():
-    html = TestClient(create_app()).get("/").text
-    assert 'id="about"' in html and 'href="#about"' in html
+    client = TestClient(create_app())
+    assert 'href="/about"' in client.get("/").text
+    html = client.get("/about").text
+    assert 'id="about"' in html and 'aria-current="page"' in html
     assert 'href="https://context.kennethreitz.org"' in html
     assert "https://github.com/kennethreitz/context/tree/master/dna" in html
     assert "jtushman.github.io/blog/2013/05/22/kenneth-reitz-should-be-a-millionaire/" in html
@@ -98,11 +100,13 @@ def test_about_section_links_context_and_dna():
     assert html.index("Written about Kenneth") < html.index("Other interesting reading") < html.index("lyndsysimon.com/posts/the_future_of_python/")
     assert html.index("Other interesting reading") < html.index("Pieces on Python’s past and future") < html.index("lyndsysimon.com")
     assert html.index("2012/6/22/hate-hate-hate") < html.index("lyndsysimon.com") < html.index("lukasz.langa.pl") < html.index("2024/10/14/mixing-oss")
-    assert "06 — Disclaimer" in html and "largest holder" in html
+    assert "largest holder" in html
+    assert 'id="disclaimer"' in client.get("/").text and 'id="disclaimer"' in client.get("/safety").text
 
 
 def test_legacy_copy_edits():
-    html = TestClient(create_app()).get("/").text
+    from site_pages import site_html
+    html = site_html(TestClient(create_app()))
     for text in (
         "kept in the spirit of a library that has served people for fifteen years",
         "it now lives on in the care of the Python Software Foundation",
@@ -111,4 +115,6 @@ def test_legacy_copy_edits():
     ):
         assert text in html
     assert 'href="https://github.com/kennethreitz/responder"' in html
-    assert html.count("legacy") == 3
+    home = TestClient(create_app()).get("/").text
+    assert "the legacy of Requests" in home
+    assert "fitting for a project about legacy" in html

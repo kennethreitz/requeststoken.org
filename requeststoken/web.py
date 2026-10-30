@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import orjson
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta, timezone
 import logging
 from concurrent.futures import ThreadPoolExecutor
 
@@ -119,43 +119,52 @@ def create_app(services: Services | None = None, observatory: DownloadObservator
 
     api.add_health_check("observatory_redis", redis_ready)
 
-    @api.get("/", include_in_schema=False)
-    def home(req, resp):
-        token_future = _POOL.submit(
-            _section,
-            services.token,
-            unavailable_token,
-            "Market data is temporarily unavailable.",
-        )
-        stats_future = _POOL.submit(
-            _section,
-            services.stats,
-            unavailable_stats,
-            "Download stats are temporarily unavailable.",
-        )
-        writing_future = _POOL.submit(writing.read)
-        token = token_future.result()
-        stats = stats_future.result()
+    def base_context(page: str) -> dict:
+        return {
+            "page": page,
+            "contract": CONTRACT,
+            "dex_page": DEX_PAGE,
+            "pump_page": PUMP_PAGE,
+            "fomo_page": FOMO_PAGE,
+            "primary_links": PRIMARY_LINKS,
+            "profile_links": PROFILE_LINKS,
+            "asset_version": asset_version,
+        }
+
+    def render(resp, page: str, **extra):
+        resp.headers["Cache-Control"] = "no-store"
+        resp.render(f"{page}.html", **base_context(page), **extra)
+
+    def load_token():
+        return _section(services.token, unavailable_token, "Market data is temporarily unavailable.")
+
+    def load_stats():
+        return _section(services.stats, unavailable_stats, "Download stats are temporarily unavailable.")
+
+    def load_writing():
         try:
-            latest_writing = writing_future.result(timeout=5)
+            return _POOL.submit(writing.read).result(timeout=5)
         except Exception as exc:
             logger.warning("writing section unavailable: %s", type(exc).__name__)
-            latest_writing = Writing._envelope({}, "unavailable")
-        resp.headers["Cache-Control"] = "no-store"
-        resp.render(
-            "index.html",
-            token=token,
-            stats=stats,
-            stats_json=safe_json(stats),
-            contract=CONTRACT,
-            dex_page=DEX_PAGE,
-            pump_page=PUMP_PAGE,
-            fomo_page=FOMO_PAGE,
-            primary_links=PRIMARY_LINKS,
-            profile_links=PROFILE_LINKS,
-            writing=latest_writing,
-            asset_version=asset_version,
-        )
+            return Writing._envelope({}, "unavailable")
+
+    @api.get("/", include_in_schema=False)
+    def home(req, resp):
+        render(resp, "home", token=_POOL.submit(load_token).result(), lock=lock_status())
+
+    @api.get("/library", include_in_schema=False)
+    def library(req, resp):
+        render(resp, "library", stats=_POOL.submit(load_stats).result())
+
+    @api.get("/about", include_in_schema=False)
+    def about(req, resp):
+        render(resp, "about", writing=load_writing())
+
+    for _slug in ("community", "faq", "safety", "updates", "projects"):
+        def _page(req, resp, _slug=_slug):
+            render(resp, _slug)
+        _page.__name__ = f"{_slug}_page"
+        api.get(f"/{_slug}", include_in_schema=False)(_page)
 
     @api.get("/api/token", **api_schema.ROUTES["/api/token"])
     def token(req, resp):
@@ -205,6 +214,24 @@ def create_app(services: Services | None = None, observatory: DownloadObservator
         resp.render("api.html", spec=spec, asset_version=asset_version)
 
     return api
+
+
+LOCK_START = datetime(2026, 10, 21, 23, 37, 17, tzinfo=timezone.utc)
+LOCK_END = datetime(2027, 2, 14, 5, 0, 0, tzinfo=timezone.utc)
+
+
+def lock_status(now: datetime | None = None) -> dict:
+    """Server-side lock progress, so the card is right without JavaScript."""
+    now = now or datetime.now(timezone.utc)
+    total = (LOCK_END - LOCK_START).total_seconds()
+    elapsed = min(max((now - LOCK_START).total_seconds(), 0), total)
+    days_left = max(0, -(-int((LOCK_END - now).total_seconds()) // 86400))
+    return {
+        "fraction": round(elapsed / total, 4),
+        "percent": round(100 * elapsed / total),
+        "days_left": days_left,
+        "label": f"{days_left} days to unlock" if days_left else "Unlock date reached",
+    }
 
 
 def _section(loader, fallback, detail="Market data is temporarily unavailable."):

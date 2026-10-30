@@ -1,0 +1,97 @@
+{%- set nav = [
+  ("community", "/community", "Community"),
+  ("faq", "/faq", "FAQ"),
+  ("safety", "/safety", "Safety"),
+  ("updates", "/updates", "Updates"),
+  ("library", "/library", "Requests"),
+  ("projects", "/projects", "Projects"),
+  ("about", "/about", "About"),
+] -%}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}requests — requeststoken.org{% endblock %}</title>
+  <meta name="description" content="{% block description %}An honest home for the $requests community token: what it is for, the lock proof, safety notes, and the community. Not financial advice.{% endblock %}">
+  <meta name="theme-color" content="#0f1311">
+  <link rel="canonical" href="https://requeststoken.org{% block path %}/{% endblock %}">
+  <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+  <meta property="og:title" content="{{ self.title() }}">
+  <meta property="og:description" content="{{ self.description() }}">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://requeststoken.org{{ self.path() }}">
+  <link rel="preload" href="/static/fonts/outfit-normal-400.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/static/css/rt.css?v={{ asset_version }}">
+  <script defer src="https://analytics.kennethreitz.org/script.js" data-website-id="b3e5361e-b5d5-4097-95a6-d9d9def5378a"></script>
+</head>
+<body id="top" class="page-{{ page }}">
+  <a class="skip" href="#content">Skip to content</a>
+  <header class="masthead">
+    <div class="shell masthead-bar">
+      <a class="brand" href="/"{% if page == "home" %} aria-current="page"{% endif %}>
+        <svg viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+          <path d="M46 11c9 6 11 17 4 26-8 10-22 11-29 3-6-7-3-16 6-19 9-3 17 2 16 10-1 9-14 12-24 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/>
+          <circle cx="49" cy="12" r="1.7" fill="currentColor"/>
+        </svg>
+        <span class="brand-word"><span class="brand-dollar">$</span>requests</span>
+      </a>
+      <nav class="mainnav" aria-label="Site">
+        <ul>
+          {% for slug, href, label in nav %}
+          <li><a href="{{ href }}"{% if page == slug %} aria-current="page"{% endif %}>{{ label }}</a></li>
+          {% endfor %}
+          <li><a class="nav-obs" href="/observatory"><span class="nav-dot" aria-hidden="true"></span>Observatory</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="content">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="colophon-band" id="links">
+    <div class="shell">
+      <div class="foot-grid">
+        <div class="foot-intro">
+          <p class="foot-mark"><span class="brand-dollar">$</span>requests</p>
+          <p>A community token named for Requests, HTTP for Humans. The only official site is requeststoken.org, and the only official account is <a href="https://x.com/kennethreitz42" target="_blank" rel="noopener noreferrer">@kennethreitz42</a>.</p>
+          <p class="foot-contract"><span>Contract</span> <code>{{ contract }}</code></p>
+        </div>
+        <div>
+          <h2 class="foot-h">Links on this site <a class="anchor" href="#links" aria-label="Link to this section">#</a></h2>
+          <p class="foot-note">If a message, advertisement, or account is not listed here, it is not this site.</p>
+          <ul class="foot-links">
+            {% for link in primary_links %}
+            <li><a href="{{ link.href }}" {% if link.href.startswith('http') %}target="_blank" rel="noopener noreferrer"{% endif %}>{{ link.label }}</a>{% if link.note %} <span class="note">{{ link.note }}</span>{% endif %}</li>
+            {% endfor %}
+          </ul>
+          <h3 class="foot-h foot-sub">Published on the token’s DexScreener profile</h3>
+          <ul class="foot-links">
+            {% for link in profile_links %}
+            <li><a href="{{ link.href }}" target="_blank" rel="noopener noreferrer">{{ link.label }}</a>{% if link.note %} <span class="note">{{ link.note }}</span>{% endif %}</li>
+            {% endfor %}
+          </ul>
+        </div>
+        <div>
+          <h2 class="foot-h">Pages</h2>
+          <ul class="foot-pages">
+            <li><a href="/">Home</a></li>
+            {% for slug, href, label in nav %}<li><a href="{{ href }}">{{ label }}</a></li>{% endfor %}
+            <li><a href="/observatory">Observatory</a></li>
+            <li><a href="/api">API</a></li>
+          </ul>
+        </div>
+      </div>
+      <p class="fine-print">Memecoins are highly speculative. This is not financial advice. There are no promises of price, returns, or value. Only spend what you can afford to lose.</p>
+      <p class="colophon">
+        requeststoken.org is built with <a href="https://github.com/kennethreitz/responder" target="_blank" rel="noopener noreferrer">Responder</a>, a newer framework from the author of Requests.
+        Live figures are also available through the <a href="/api">API</a>.
+        The Requests library and this token are different things. This token is not a Python Software Foundation project.
+      </p>
+    </div>
+  </footer>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

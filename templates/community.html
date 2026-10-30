@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% from "_macros.html" import pagehead, x, ext %}
+{% block title %}Community — requeststoken.org{% endblock %}
+{% block path %}/community{% endblock %}
+{% block description %}Kenneth’s five community rules, the $requests group chat on X, the read-only Telegram group, and how you can help.{% endblock %}
+{% block content %}
+{{ pagehead("/community", "Community", "The $requests community gathers in the group chat on X. It runs on five rules.") }}
+
+<section class="band rules-band" id="rules" aria-labelledby="rules-title">
+  <div class="shell">
+    <h2 id="rules-title" class="rules-title">Kenneth’s community rules <a class="anchor" href="#rules" aria-label="Link to this section">#</a></h2>
+    <ol class="rules-list">
+      <li><span class="rule-n">1</span><p><a href="https://kennethreitz.org/essays/2013-01-be_cordial_or_be_on_your_way" target="_blank" rel="noopener noreferrer">Be cordial, or be on your way.</a></p></li>
+      <li><span class="rule-n">2</span><p>Stay risk averse.</p></li>
+      <li><span class="rule-n">3</span><p>Build things for humans.</p></li>
+      <li><span class="rule-n">4</span><p>Expect imposters. We’ll never DM you first.</p></li>
+      <li class="rule-wide"><span class="rule-n">5</span><p>Optimize for social impact and sustainability.</p></li>
+    </ol>
+  </div>
+</section>
+
+<section class="band" id="chat" aria-labelledby="chat-title">
+  <div class="shell split">
+    <div class="prose">
+      <h2 id="chat-title">The group chat <a class="anchor" href="#chat" aria-label="Link to this section">#</a></h2>
+      <p class="chat-lede">The $requests community gathers in the group chat on X. The Telegram group is locked and read-only: there’s no chatting there.</p>
+      <p class="chat-actions">
+        <a class="chat-join btn btn-primary" id="chat-join" href="https://x.com/i/chat/group_join/g2113555281518977367/54IJSMh16G" target="_blank" rel="noopener noreferrer">Join the group chat</a>
+        <a class="chat-join btn" id="chat-telegram" href="https://t.me/+dz8vzHYMS78xMzA1" target="_blank" rel="noopener noreferrer">Telegram group (read-only)</a>
+      </p>
+      <p class="chat-secondary">There is no Discord. Treat any other Telegram or Discord as fake: the real links are the ones on this page.</p>
+    </div>
+    <div class="panel">
+      <h3>In the chat</h3>
+      <ul class="ticks">
+        <li><a href="https://kennethreitz.org/essays/2013-01-be_cordial_or_be_on_your_way" target="_blank" rel="noopener noreferrer">Be cordial, or be on your way.</a></li>
+        <li>Everyone is welcome, and women especially.</li>
+        <li>The Telegram group is locked, so members can’t chat there. To talk, join the group chat on X. The five rules apply there too, so report spam or FUD to the moderators rather than arguing.</li>
+        <li>Kenneth will never DM you first. Anyone who does, claiming to be him, is an imposter.</li>
+        <li>Nobody official will ask for your wallet, or for bot or admin access.</li>
+        <li>Nobody official will ask you for money for a DexScreener or Telegram boost. Real DexScreener profile updates are paid directly to DexScreener.</li>
+        <li>Nobody else speaks for $requests or runs accounts for it, and nobody official promotes other tokens.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="help" aria-labelledby="help-title">
+  <div class="shell">
+    <h2 id="help-title">How you can help <a class="anchor" href="#help" aria-label="Link to this section">#</a></h2>
+    <ul class="cards cards-plain">
+      <li class="card"><span class="card-title">Share</span><span class="card-text">Share Kenneth’s posts from {{ x() }}.</span></li>
+      <li class="card"><span class="card-title">Explain</span><span class="card-text">Explain Requests to a friend.</span></li>
+      <li class="card"><span class="card-title">Kindness</span><span class="card-text">Be kind.</span></li>
+      <li class="card"><span class="card-title">Report</span><span class="card-text">Report imposters.</span></li>
+      <li class="card"><span class="card-title">Organic</span><span class="card-text">Organic only: no raids, and no paid promoters.</span></li>
+    </ul>
+    <p class="more-link">Before you engage with anyone claiming to be official, read the <a href="/safety">safety notes</a>.</p>
+  </div>
+</section>
+{% endblock %}
