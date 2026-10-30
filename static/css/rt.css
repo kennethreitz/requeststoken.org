@@ -320,3 +320,4 @@ a.card:hover { border-color: var(--gold); color: var(--ink); transform: translat
 .fine-print { margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid var(--line); }
 
 @media print { .masthead, .skip { display: none; } body { background: #fff; color: #000; } }
+.project-note { color: var(--muted); }

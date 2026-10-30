@@ -4,7 +4,7 @@
 {% block path %}/projects{% endblock %}
 {% block description %}Other open-source projects by Kenneth Reitz, with links to their source.{% endblock %}
 {% block content %}
-{{ pagehead("/projects", "Other projects by Kenneth", "All open source: each project’s source is public on GitHub under an MIT or ISC license.") }}
+{{ pagehead("/projects", "Other projects by Kenneth", "All open source: each project’s source is public on GitHub. Licenses vary by project.") }}
 <section class="band" id="projects" aria-labelledby="projects-title">
   <div class="shell">
     <h2 id="projects-title" class="eyebrow">Recent work</h2>
@@ -14,6 +14,28 @@
       <li class="project"><h3><a href="https://kjvstudy.org" target="_blank" rel="noopener noreferrer">KJV Study</a></h3><p>A site for studying the King James Version Bible, with verse search, a topical index, study guides, and reading plans.</p><p class="project-src"><a href="https://github.com/kennethreitz/kjvstudy.org" target="_blank" rel="noopener noreferrer">source</a></p></li>
       <li class="project"><h3><a href="https://kennethreitz.org" target="_blank" rel="noopener noreferrer">kennethreitz.org</a></h3><p>Kenneth’s own site and essays, on open source, AI collaboration, and building software for humans.</p><p class="project-src"><a href="https://github.com/kennethreitz/kennethreitz.org" target="_blank" rel="noopener noreferrer">source</a></p></li>
       <li class="project"><h3><a href="https://github.com/kennethreitz" target="_blank" rel="noopener noreferrer">GitHub</a></h3><p>Kenneth’s GitHub profile, home to these projects and the rest of his open-source work.</p></li>
+    </ul>
+  </div>
+</section>
+<section class="band" id="classics" aria-labelledby="classics-title">
+  <div class="shell">
+    <h2 id="classics-title" class="eyebrow">Well-known open source</h2>
+    <ul class="projects other-projects">
+      <li class="project"><h3><a href="https://tablib.readthedocs.io/" target="_blank" rel="noopener noreferrer">Tablib</a></h3><p>A Python module for tabular datasets in XLS, CSV, JSON, YAML and more.</p><p class="project-src"><a href="https://github.com/kennethreitz/tablib" target="_blank" rel="noopener noreferrer">source</a></p></li>
+      <li class="project"><h3><a href="https://pypi.org/project/records/" target="_blank" rel="noopener noreferrer">Records</a></h3><p>SQL for Humans™.</p><p class="project-src"><a href="https://github.com/kennethreitz/records" target="_blank" rel="noopener noreferrer">source</a></p></li>
+      <li class="project"><h3>Maya</h3><p>Datetimes for Humans™.</p><p class="project-src"><a href="https://github.com/kennethreitz/maya" target="_blank" rel="noopener noreferrer">source</a></p></li>
+      <li class="project"><h3><a href="https://pipenv.pypa.io" target="_blank" rel="noopener noreferrer">Pipenv</a></h3><p>Python development workflow for humans.</p><p class="project-src"><a href="https://github.com/kennethreitz/pipenv" target="_blank" rel="noopener noreferrer">source</a></p></li>
+      <li class="project"><h3><a href="https://responder.kennethreitz.org/" target="_blank" rel="noopener noreferrer">Responder</a></h3><p>A familiar HTTP service framework for Python. It runs this site.</p><p class="project-src"><a href="https://github.com/kennethreitz/responder" target="_blank" rel="noopener noreferrer">source</a></p></li>
+      <li class="project"><h3><a href="https://httpbin.org" target="_blank" rel="noopener noreferrer">httpbin.org</a></h3><p>An HTTP request and response service, written in Python and Flask. <span class="project-note">Now maintained by Postman Labs.</span></p><p class="project-src"><a href="https://github.com/postmanlabs/httpbin" target="_blank" rel="noopener noreferrer">source</a></p></li>
+      <li class="project"><h3><a href="https://docs.python-guide.org" target="_blank" rel="noopener noreferrer">The Hitchhiker’s Guide to Python</a></h3><p>A Python best-practices guidebook, written for humans.</p><p class="project-src"><a href="https://github.com/kennethreitz/python-guide" target="_blank" rel="noopener noreferrer">source</a></p></li>
+      <li class="project"><h3><a href="https://pypi.org/project/dj-database-url/" target="_blank" rel="noopener noreferrer">dj-database-url</a></h3><p>Use database URLs in your Django application.</p><p class="project-src"><a href="https://github.com/kennethreitz/dj-database-url" target="_blank" rel="noopener noreferrer">source</a></p></li>
+      <li class="project"><h3>osx-gcc-installer</h3><p>A GCC installer for OS X, without Xcode. <span class="project-note">A historical project.</span></p><p class="project-src"><a href="https://github.com/kennethreitz/osx-gcc-installer" target="_blank" rel="noopener noreferrer">source</a></p></li>
+      <li class="project"><h3>Bake</h3><p>The strangely familiar workflow utility.</p><p class="project-src"><a href="https://github.com/kennethreitz/bake" target="_blank" rel="noopener noreferrer">source</a></p></li>
+      <li class="project"><h3>Background</h3><p>Runs things in the background.</p><p class="project-src"><a href="https://github.com/kennethreitz/background" target="_blank" rel="noopener noreferrer">source</a></p></li>
+      <li class="project"><h3><a href="https://frostming.github.io/legit" target="_blank" rel="noopener noreferrer">Legit</a></h3><p>Git for humans, inspired by GitHub for Mac™. <span class="project-note">Now maintained by Frost Ming.</span></p><p class="project-src"><a href="https://github.com/frostming/legit" target="_blank" rel="noopener noreferrer">source</a></p></li>
+      <li class="project"><h3>autoenv</h3><p>Directory-based environments. <span class="project-note">Now maintained by Edwin Kofler (hyperupcall).</span></p><p class="project-src"><a href="https://github.com/hyperupcall/autoenv" target="_blank" rel="noopener noreferrer">source</a></p></li>
+      <li class="project"><h3>Clint</h3><p>Python command-line application tools. <span class="project-note">Archived.</span></p><p class="project-src"><a href="https://github.com/kennethreitz/clint" target="_blank" rel="noopener noreferrer">source</a></p></li>
+      <li class="project"><h3>Envoy</h3><p>Python subprocesses for humans™. <span class="project-note">Archived.</span></p><p class="project-src"><a href="https://github.com/not-kennethreitz/envoy" target="_blank" rel="noopener noreferrer">source</a></p></li>
     </ul>
   </div>
 </section>

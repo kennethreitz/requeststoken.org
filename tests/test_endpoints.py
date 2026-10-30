@@ -382,7 +382,7 @@ def test_other_projects_source_links():
     html = site_source()
     block = pathlib.Path("templates/projects.html").read_text()
     assert "Other projects by Kenneth" in block
-    assert "All open source: each project’s source is public on GitHub under an MIT or ISC license." in block
+    assert "All open source: each project’s source is public on GitHub. Licenses vary by project." in block
     assert 'href="https://github.com/kennethreitz" target="_blank"' in block
     assert "context.kennethreitz.org" not in block and "kennethreitz/context" not in block
     for r in ("pytheory", "interpretations", "kjvstudy.org", "kennethreitz.org"):
@@ -448,3 +448,11 @@ def test_swirl_logo_removed():
     for f in pathlib.Path("templates").glob("*.html"):
         text = f.read_text()
         assert "M46 11c9" not in text and 'cx="49" cy="12"' not in text, f
+
+
+def test_classic_projects_listed():
+    import pathlib
+    block = pathlib.Path("templates/projects.html").read_text()
+    for repo in ("kennethreitz/tablib", "kennethreitz/maya", "kennethreitz/records", "postmanlabs/httpbin",
+                 "kennethreitz/python-guide", "kennethreitz/dj-database-url", "kennethreitz/osx-gcc-installer"):
+        assert f"https://github.com/{repo}" in block
