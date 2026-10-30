@@ -453,6 +453,6 @@ def test_swirl_logo_removed():
 def test_classic_projects_listed():
     import pathlib
     block = pathlib.Path("templates/projects.html").read_text()
-    for repo in ("kennethreitz/tablib", "kennethreitz/maya", "kennethreitz/records", "postmanlabs/httpbin",
+    for repo in ("kennethreitz/tablib", "kennethreitz/maya", "kennethreitz/records", "postmanlabs/httpbin", "psf/requests-html",
                  "kennethreitz/python-guide", "kennethreitz/dj-database-url", "kennethreitz/osx-gcc-installer"):
         assert f"https://github.com/{repo}" in block
