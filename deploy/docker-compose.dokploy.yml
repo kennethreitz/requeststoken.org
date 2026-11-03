@@ -1,7 +1,11 @@
+# Production compose used by Dokploy (sourceType git, branch main).
+# Paths are relative to this file, so the build context is the repo root.
 services:
   web:
-    image: requeststoken-org:05b5362
-    pull_policy: never
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    image: requeststoken-org:git
     restart: unless-stopped
     environment:
       PORT: "5042"
