@@ -55,7 +55,9 @@ class RevalidateAssets:
 
     async def __call__(self, scope, receive, send):
         path = scope.get("path", "") if scope.get("type") == "http" else ""
-        if not path.startswith("/static/") or not path.endswith((".js", ".mjs", ".css")):
+        name = path.rsplit("/", 1)[-1]
+        icon = name.startswith("favicon") or name.startswith("apple-touch-icon")
+        if not path.startswith("/static/") or not (path.endswith((".js", ".mjs", ".css")) or icon):
             return await self.app(scope, receive, send)
 
         async def wrapped(message):
@@ -70,7 +72,14 @@ class RevalidateAssets:
 
 def _asset_version() -> str:
     digest = hashlib.sha256()
-    for path in sorted((ROOT / "static" / "css").glob("*.css")) + sorted((ROOT / "static" / "js").glob("*.mjs")) + sorted((ROOT / "static" / "js").glob("*.js")):
+    paths = (
+        sorted((ROOT / "static" / "css").glob("*.css"))
+        + sorted((ROOT / "static" / "js").glob("*.mjs"))
+        + sorted((ROOT / "static" / "js").glob("*.js"))
+    )
+    for name in ("favicon.svg", "favicon.ico", "favicon-32.png", "apple-touch-icon.png"):
+        paths.append(ROOT / "static" / name)
+    for path in paths:
         digest.update(path.read_bytes())
     return digest.hexdigest()[:10]
 
@@ -212,6 +221,19 @@ def create_app(services: Services | None = None, observatory: DownloadObservator
         resp.headers["Cache-Control"] = "no-cache"
         spec = api.openapi._apispec.to_dict()
         resp.render("api.html", spec=spec, asset_version=asset_version)
+
+    for route, filename, content_type in (
+        ("/favicon.ico", "favicon.ico", "image/x-icon"),
+        ("/apple-touch-icon.png", "apple-touch-icon.png", "image/png"),
+        ("/apple-touch-icon-precomposed.png", "apple-touch-icon.png", "image/png"),
+    ):
+        def _icon(req, resp, filename=filename, content_type=content_type):
+            resp.file(ROOT / "static" / filename, content_type=content_type)
+            # Favicons stick in browser caches. no-cache makes the next visit revalidate.
+            resp.headers["Cache-Control"] = "no-cache"
+
+        _icon.__name__ = "icon_" + route.strip("/").replace(".", "_").replace("-", "_")
+        api.get(route, include_in_schema=False)(_icon)
 
     return api
 

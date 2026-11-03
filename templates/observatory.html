@@ -1,3 +1,4 @@
+{%- from "_macros.html" import icons -%}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,7 +8,7 @@
   <meta name="description" content="Source-reported Requests download history and 120 public projects with explanations and pinned source evidence.">
   <meta name="theme-color" content="#101410">
   <link rel="canonical" href="https://requeststoken.org/observatory">
-  <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+  {{ icons(asset_version) }}
   <link rel="stylesheet" href="/static/css/site.css?v={{ asset_version }}">
   <link rel="stylesheet" href="/static/css/observatory.css?v={{ asset_version }}">
   <script type="module" src="/static/js/observatory.mjs?v={{ asset_version }}"></script>
