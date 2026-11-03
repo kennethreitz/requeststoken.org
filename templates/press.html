@@ -28,25 +28,22 @@
 <section class="band" id="colors" aria-labelledby="colors-title">
   <div class="shell">
     <h2 id="colors-title" class="eyebrow">Colors <a class="anchor" href="#colors" aria-label="Link to this section">#</a></h2>
+    <p class="note">The site follows your system theme. Each color lists its dark value, then its light value.</p>
     <ul class="press-swatches">
-      {% for name, hex, use in [
-        ("Ground", "#101410", "Page background"),
-        ("Raised", "#181d17", "Panels and cards"),
-        ("Ink", "#efe8d6", "Body text and the logo"),
-        ("Muted", "#a39c8a", "Secondary text"),
-        ("Gold", "#e4c36a", "Accent, the $ sign"),
-        ("Gold dim", "#8d7340", "Quiet accent"),
-        ("Blue", "#8eb8cc", "Links and data"),
-        ("Sage", "#9cba96", "Status OK"),
-        ("Clay", "#d08a78", "Warnings"),
-      ] %}
-      <li class="press-swatch"><span class="press-chip press-chip-{{ name|lower|replace(' ', '-') }}" aria-hidden="true"></span><span class="press-swatch-name">{{ name }}</span> <code>{{ hex }}</code><span class="note">{{ use }}</span></li>
-      {% endfor %}
+      <li class="press-swatch"><span class="press-chip press-chip-ground" aria-hidden="true"></span><span class="press-swatch-name">Ground</span> <code>#0f1311</code> <code>#f6f1e4</code><span class="note">Page background</span></li>
+      <li class="press-swatch"><span class="press-chip press-chip-raised" aria-hidden="true"></span><span class="press-swatch-name">Raised</span> <code>#1b231e</code> <code>#fffbf1</code><span class="note">Panels and cards</span></li>
+      <li class="press-swatch"><span class="press-chip press-chip-ink" aria-hidden="true"></span><span class="press-swatch-name">Ink</span> <code>#f1ead8</code> <code>#1c231e</code><span class="note">Body text</span></li>
+      <li class="press-swatch"><span class="press-chip press-chip-muted" aria-hidden="true"></span><span class="press-swatch-name">Muted</span> <code>#a9a290</code> <code>#5d5a4f</code><span class="note">Secondary text</span></li>
+      <li class="press-swatch"><span class="press-chip press-chip-gold" aria-hidden="true"></span><span class="press-swatch-name">Gold</span> <code>#e4c36a</code> <code>#8a6513</code><span class="note">Accent, the $ sign</span></li>
+      <li class="press-swatch"><span class="press-chip press-chip-gold-dim" aria-hidden="true"></span><span class="press-swatch-name">Gold dim</span> <code>#8d7340</code> <code>#b89652</code><span class="note">Quiet accent</span></li>
+      <li class="press-swatch"><span class="press-chip press-chip-blue" aria-hidden="true"></span><span class="press-swatch-name">Blue</span> <code>#9cc3d5</code> <code>#1f5f7a</code><span class="note">Links and data</span></li>
+      <li class="press-swatch"><span class="press-chip press-chip-sage" aria-hidden="true"></span><span class="press-swatch-name">Sage</span> <code>#9cba96</code> <code>#3f6b3a</code><span class="note">Status OK</span></li>
+      <li class="press-swatch"><span class="press-chip press-chip-clay" aria-hidden="true"></span><span class="press-swatch-name">Clay</span> <code>#d89482</code> <code>#9a3f2b</code><span class="note">Warnings</span></li>
     </ul>
     <h2 id="fonts" class="eyebrow">Fonts <a class="anchor" href="#fonts" aria-label="Link to this section">#</a></h2>
     <ul class="press-fonts">
-      <li><span class="press-font-serif">Fraunces</span> Italic 500 for headlines. {{ ext("https://fonts.google.com/specimen/Fraunces", "Fraunces") }}, SIL Open Font License.</li>
-      <li><span class="press-font-sans">Outfit</span> Regular 400 for body text. {{ ext("https://fonts.google.com/specimen/Outfit", "Outfit") }}, SIL Open Font License.</li>
+      <li><span class="press-font-serif">Fraunces</span> Italic 500 and 560 for headlines. {{ ext("https://fonts.google.com/specimen/Fraunces", "Fraunces") }}, SIL Open Font License.</li>
+      <li><span class="press-font-sans">Outfit</span> 400 to 600 for body text. {{ ext("https://fonts.google.com/specimen/Outfit", "Outfit") }}, SIL Open Font License.</li>
       <li><span class="press-font-mono">IBM Plex Mono</span> 400 and 500 for code, figures, and labels. {{ ext("https://fonts.google.com/specimen/IBM+Plex+Mono", "IBM Plex Mono") }}, SIL Open Font License.</li>
     </ul>
   </div>

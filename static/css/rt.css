@@ -429,18 +429,18 @@ a.card:hover { border-color: var(--gold); color: var(--ink); transform: translat
 .press-thumb img { max-width: 160px; height: auto; }
 .press-swatches { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.75rem; }
 .press-swatch { display: grid; grid-template-columns: 2.5rem 1fr; column-gap: 0.75rem; align-items: center; }
-.press-chip { grid-row: span 3; width: 2.5rem; height: 2.5rem; border-radius: 6px; border: 1px solid var(--line); }
+.press-chip { grid-row: span 3; background: linear-gradient(135deg, var(--d) 50%, var(--l) 50%); width: 2.5rem; height: 2.5rem; border-radius: 6px; border: 1px solid var(--line); }
 .press-swatch code { font-family: var(--mono); font-size: 0.85rem; color: var(--muted); }
 .press-fonts li { margin: 0.5rem 0; }
 .press-font-serif { font-family: var(--serif); font-style: italic; font-size: 1.4rem; margin-right: 0.5rem; }
 .press-font-sans { font-family: var(--sans); font-size: 1.3rem; margin-right: 0.5rem; }
 .press-font-mono { font-family: var(--mono); font-size: 1.15rem; margin-right: 0.5rem; }
-.press-chip-ground { background: #101410; }
-.press-chip-raised { background: #181d17; }
-.press-chip-ink { background: #efe8d6; }
-.press-chip-muted { background: #a39c8a; }
-.press-chip-gold { background: #e4c36a; }
-.press-chip-gold-dim { background: #8d7340; }
-.press-chip-blue { background: #8eb8cc; }
-.press-chip-sage { background: #9cba96; }
-.press-chip-clay { background: #d08a78; }
+.press-chip-ground { --d: #0f1311; --l: #f6f1e4; }
+.press-chip-raised { --d: #1b231e; --l: #fffbf1; }
+.press-chip-ink { --d: #f1ead8; --l: #1c231e; }
+.press-chip-muted { --d: #a9a290; --l: #5d5a4f; }
+.press-chip-gold { --d: #e4c36a; --l: #8a6513; }
+.press-chip-gold-dim { --d: #8d7340; --l: #b89652; }
+.press-chip-blue { --d: #9cc3d5; --l: #1f5f7a; }
+.press-chip-sage { --d: #9cba96; --l: #3f6b3a; }
+.press-chip-clay { --d: #d89482; --l: #9a3f2b; }
