@@ -444,3 +444,10 @@ a.card:hover { border-color: var(--gold); color: var(--ink); transform: translat
 .press-chip-blue { --d: #9cc3d5; --l: #1f5f7a; }
 .press-chip-sage { --d: #9cba96; --l: #3f6b3a; }
 .press-chip-clay { --d: #d89482; --l: #9a3f2b; }
+
+/* Hero extras */
+.pitch-extras { margin: 1.5rem 0 0.5rem; }
+.pitch-extras .eyebrow { margin: 0 0 0.5rem; }
+.extras-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.4rem; }
+.extras-list a { font-family: var(--mono); font-weight: 500; margin-right: 0.4rem; }
+.extras-line { color: var(--muted); }
