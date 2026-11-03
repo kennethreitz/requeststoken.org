@@ -395,8 +395,12 @@ def test_faq_help_safety_updates_origin():
     for name in ("home", "faq", "library", "updates", "safety", "community"):
         assert pathlib.Path(f"templates/{name}.html").exists()
     assert "Is there an official $requests X account?" in html
-    assert "@RequestsToken and requeststoken.com are not his" in html
-    assert "listed on this page first" in html
+    assert "We’re planning to launch an official X account soon." in html
+    assert "There isn’t one today." in html
+    assert "@RequestsToken" in html and "are not official" in html
+    assert "Watch this site for the announcement." in html
+    assert "x.com/requeststoken" not in html.lower()
+    assert "listed on this page first" not in html
     assert "What’s the utility?" in html and "no web3 features are planned" in html
     assert "requests.py lived inside that project until he split it into its own repository in 2011" in html
     assert html.index('tl-year">Origin') < html.index('tl-year">2011')

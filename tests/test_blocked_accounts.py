@@ -72,8 +72,10 @@ def test_hero_heading_is_dollar_requests():
 def test_official_account_and_no_todos():
     import pathlib
     html = site_source()
-    assert 'href="https://x.com/kennethreitz42"' in html
-    assert "Anyone else claiming to speak for $requests is not official." in html
+    assert 'href="https://x.com/kennethreitz42"' in pathlib.Path("templates/_macros.html").read_text()
+    assert "Anyone else claiming to speak for $requests is not official" in html
+    assert "There isn’t one yet." in html
+    assert "https://x.com/requeststoken" not in html.lower()
     assert "TODO" not in html
 
 

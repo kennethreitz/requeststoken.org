@@ -115,7 +115,7 @@ The official website is requeststoken.org. Since the community takeover on Oct 2
 
 ## Official account
 
-The only official account is [@kennethreitz42](https://x.com/kennethreitz42) on X. Anyone else claiming to speak for $requests is not official. Other X accounts listed on the token's DexScreener page are filtered out (`BLOCKED_HANDLES` in `requeststoken/config.py`).
+There is no official X account yet. One is planned, and it will be announced on requeststoken.org. Accounts already using the name, including @RequestsToken, are not official. Other X accounts listed on the token's DexScreener page are filtered out (`BLOCKED_HANDLES` in `requeststoken/config.py`).
 
 There is no roadmap on this page.
 
