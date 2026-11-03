@@ -450,6 +450,41 @@ def test_swirl_logo_removed():
         assert "M46 11c9" not in text and 'cx="49" cy="12"' not in text, f
 
 
+def test_favicon_is_served_for_every_browser():
+    import struct
+
+    api, _client = build({})
+    for path in ("/", "/observatory", "/api"):
+        html = api.requests.get(path).text
+        assert 'rel="icon" href="/favicon.ico?v=' in html, path
+        assert 'href="/static/favicon.svg?v=' in html and 'type="image/svg+xml"' in html, path
+        assert 'href="/static/favicon-32.png?v=' in html and 'sizes="32x32"' in html, path
+        assert 'rel="apple-touch-icon" href="/apple-touch-icon.png?v=' in html, path
+
+    ico = api.requests.get("/favicon.ico")
+    assert ico.status_code == 200
+    assert ico.headers["content-type"].split(";")[0] == "image/x-icon"
+    assert ico.content[:4] == b"\x00\x00\x01\x00"
+    assert struct.unpack_from("<H", ico.content, 4)[0] == 3
+    assert ico.headers["cache-control"] == "no-cache"
+    assert b"M22.5 6.5" not in ico.content
+
+    for path, size in (("/apple-touch-icon.png", 180), ("/apple-touch-icon-precomposed.png", 180), ("/static/favicon-32.png", 32)):
+        png = api.requests.get(path)
+        assert png.status_code == 200, path
+        assert png.headers["content-type"].split(";")[0] == "image/png", path
+        assert png.content[:8] == b"\x89PNG\r\n\x1a\n"
+        assert struct.unpack(">II", png.content[16:24]) == (size, size), path
+
+    svg = api.requests.get("/static/favicon.svg")
+    assert svg.status_code == 200
+    assert svg.headers["content-type"].split(";")[0] == "image/svg+xml"
+    assert b'width="32"' in svg.content and b'height="32"' in svg.content
+    assert b"#e4c36a" in svg.content and b"#0f1311" in svg.content
+    assert b"M22.5 6.5" not in svg.content
+    assert svg.headers["cache-control"] == "no-cache"
+
+
 def test_classic_projects_listed():
     import pathlib
     block = pathlib.Path("templates/projects.html").read_text()
