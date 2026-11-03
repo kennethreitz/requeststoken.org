@@ -418,3 +418,29 @@ a.card:hover { border-color: var(--gold); color: var(--ink); transform: translat
 
 @media print { .masthead, .skip { display: none; } body { background: #fff; color: #000; } }
 .project-note { color: var(--muted); }
+
+/* Press kit */
+.press-assets, .press-swatches, .press-fonts { list-style: none; padding: 0; margin: 1rem 0 1.5rem; }
+.press-assets { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.25rem; }
+.press-asset { background: var(--bg-raise); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem; }
+.press-asset h3 { margin: 0.75rem 0 0.25rem; font-family: var(--serif); font-style: italic; font-weight: 500; }
+.press-asset p { margin: 0; font-family: var(--mono); font-size: 0.85rem; }
+.press-thumb { display: grid; place-items: center; height: 180px; background: var(--bg); border-radius: 8px; }
+.press-thumb img { max-width: 160px; height: auto; }
+.press-swatches { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.75rem; }
+.press-swatch { display: grid; grid-template-columns: 2.5rem 1fr; column-gap: 0.75rem; align-items: center; }
+.press-chip { grid-row: span 3; width: 2.5rem; height: 2.5rem; border-radius: 6px; border: 1px solid var(--line); }
+.press-swatch code { font-family: var(--mono); font-size: 0.85rem; color: var(--muted); }
+.press-fonts li { margin: 0.5rem 0; }
+.press-font-serif { font-family: var(--serif); font-style: italic; font-size: 1.4rem; margin-right: 0.5rem; }
+.press-font-sans { font-family: var(--sans); font-size: 1.3rem; margin-right: 0.5rem; }
+.press-font-mono { font-family: var(--mono); font-size: 1.15rem; margin-right: 0.5rem; }
+.press-chip-ground { background: #101410; }
+.press-chip-raised { background: #181d17; }
+.press-chip-ink { background: #efe8d6; }
+.press-chip-muted { background: #a39c8a; }
+.press-chip-gold { background: #e4c36a; }
+.press-chip-gold-dim { background: #8d7340; }
+.press-chip-blue { background: #8eb8cc; }
+.press-chip-sage { background: #9cba96; }
+.press-chip-clay { background: #d08a78; }

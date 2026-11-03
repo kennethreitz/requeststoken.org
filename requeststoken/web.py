@@ -169,11 +169,16 @@ def create_app(services: Services | None = None, observatory: DownloadObservator
     def about(req, resp):
         render(resp, "about", writing=load_writing())
 
-    for _slug in ("community", "faq", "safety", "updates", "projects"):
+    for _slug in ("community", "faq", "safety", "updates", "projects", "press"):
         def _page(req, resp, _slug=_slug):
             render(resp, _slug)
         _page.__name__ = f"{_slug}_page"
         api.get(f"/{_slug}", include_in_schema=False)(_page)
+
+    @api.get("/press-kit", include_in_schema=False)
+    def press_kit_redirect(req, resp):
+        resp.status_code = 301
+        resp.headers["Location"] = "/press"
 
     @api.get("/api/token", **api_schema.ROUTES["/api/token"])
     def token(req, resp):
