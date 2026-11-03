@@ -224,6 +224,32 @@ def test_disk_cache_is_used_when_a_later_process_cannot_reach_upstream(tmp_path)
     assert body["market_cap_usd"] == 101143
 
 
+def test_support_pitch_is_honest_and_first():
+    import pathlib
+    home = pathlib.Path("templates/home.html").read_text()
+    assert home.index('id="support"') < home.index('id="hero"')
+    assert "A way to support the work" in home
+    assert "HTTP for Humans." in home
+    assert "Millions of developers use it for free." in home
+    assert "He didn’t launch this token." in home
+    assert "creator fees from trading help support him" in home
+    assert "About 102.5M of his tokens are" in home
+    assert "This is not an investment, and it is not financial advice." in home
+    assert "Nothing here is a promise of price, returns, or gains." in home
+    for href in (
+        "https://pytheory.org",
+        "https://github.com/kennethreitz/mcp-applemusic",
+        "https://github.com/kennethreitz/responder",
+        "https://kjvstudy.org",
+        "https://infinitestate.com/",
+    ):
+        assert f'href="{href}"' in home
+    lowered = home.lower()
+    assert "charity" not in lowered and "charitable" not in lowered
+    assert "We’re planning to launch an official X account soon." in home
+    assert 'rel="icon"' in pathlib.Path("templates/_macros.html").read_text()
+
+
 def test_homepage_renders_facts_figures_and_the_disclaimer():
     api, _client = build({
         DEX_API: [FakeResponse(DEX)],
