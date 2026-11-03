@@ -228,22 +228,28 @@ def test_support_pitch_is_honest_and_first():
     import pathlib
     home = pathlib.Path("templates/home.html").read_text()
     assert home.index('id="support"') < home.index('id="hero"')
-    assert "A way to support the work" in home
-    assert "HTTP for Humans." in home
-    assert "Millions of developers use it for free." in home
+    assert "The work stays free." in home
+    assert "February 14, 2011" in home
     assert "He didn’t launch this token." in home
-    assert "creator fees from trading help support him" in home
-    assert "About 102.5M of his tokens are" in home
+    assert "Creator fees help support Kenneth’s ongoing work." in home
+    assert "102.5M" in home and "Feb 14, 2027" in home
+    assert "Release 9.2.0 is current" in home
+    assert "Version 0.57.13" in home
+    assert "24-track album" in home
+    assert "April 2022" in home
     assert "This is not an investment, and it is not financial advice." in home
     assert "Nothing here is a promise of price, returns, or gains." in home
     for href in (
-        "https://pytheory.org",
-        "https://github.com/kennethreitz/mcp-applemusic",
+        "https://github.com/psf/requests",
         "https://github.com/kennethreitz/responder",
+        "https://pytheory.org",
         "https://kjvstudy.org",
-        "https://infinitestate.com/",
+        "https://interpretations.kennethreitz.org",
+        "https://github.com/kennethreitz/infinite-state-sample-pack",
     ):
         assert f'href="{href}"' in home
+    assert "mcp-applemusic" not in home and "MCP servers" not in home
+    assert "infinitestate.com" not in home
     lowered = home.lower()
     assert "charity" not in lowered and "charitable" not in lowered
     assert "We’re planning to launch an official X account soon." in home
