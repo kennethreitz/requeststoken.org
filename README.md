@@ -113,9 +113,11 @@ refreshes; see the [deployment handoff](deploy/README.md#observatory-redis).
 
 The official website is requeststoken.org. Since the community takeover on Oct 24, 2026, the DexScreener listing shows only requeststoken.org and @kennethreitz42.
 
-## Official account
+## Official accounts
 
-There is no official X account yet. One is planned, and it will be announced on requeststoken.org. Accounts already using the name, including @RequestsToken, are not official. Other X accounts listed on the token's DexScreener page are filtered out (`BLOCKED_HANDLES` in `requeststoken/config.py`).
+@Requests_Token (https://x.com/Requests_Token) is the project's official X account. @kennethreitz42 (https://x.com/kennethreitz42) is Kenneth's personal account. Both are official.
+
+@RequestsToken (no underscore) is not official, and requeststoken.com is not this site. Other X accounts listed on the token's DexScreener page are filtered out (`BLOCKED_HANDLES` in `requeststoken/config.py`). The blocked string is `requeststoken`, with no underscore, so it does not match @Requests_Token.
 
 There is no roadmap on this page.
 

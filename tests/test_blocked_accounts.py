@@ -5,9 +5,22 @@ from requeststoken.config import PROFILE_LINKS, filter_links
 def test_blocked_handle_filtered_case_insensitive():
     links = [{"label": "x", "href": "https://x.com/RequestsToken"},
              {"label": "@REQUESTSTOKEN", "href": "https://x.com/foo"},
-             {"label": "ok", "href": "https://x.com/kennethreitz42"}]
-    assert [l["label"] for l in filter_links(links)] == ["ok"]
-    assert not any("requeststoken" in l["href"].lower() for l in PROFILE_LINKS)
+             {"label": "ok", "href": "https://x.com/kennethreitz42"},
+             {"label": "@Requests_Token", "href": "https://x.com/Requests_Token"}]
+    assert [l["label"] for l in filter_links(links)] == ["ok", "@Requests_Token"]
+    assert not any(l["href"].lower().rstrip("/").endswith("/requeststoken") for l in PROFILE_LINKS)
+
+
+def test_underscore_account_is_official_and_not_blocked():
+    from requeststoken.config import PRIMARY_LINKS, is_blocked_link
+    official = {"label": "@Requests_Token", "href": "https://x.com/Requests_Token"}
+    fake = {"label": "@RequestsToken", "href": "https://x.com/RequestsToken"}
+    assert is_blocked_link(fake)
+    assert not is_blocked_link(official)
+    project = [l for l in PRIMARY_LINKS if l["href"] == "https://x.com/Requests_Token"]
+    personal = [l for l in PRIMARY_LINKS if l["href"] == "https://x.com/kennethreitz42"]
+    assert project and project[0]["note"] == "The project's official X account"
+    assert personal and personal[0]["note"] == "Kenneth's personal account"
 
 
 def test_rendered_page_has_no_blocked_account():
@@ -72,9 +85,17 @@ def test_hero_heading_is_dollar_requests():
 def test_official_account_and_no_todos():
     import pathlib
     html = site_source()
-    assert 'href="https://x.com/kennethreitz42"' in pathlib.Path("templates/_macros.html").read_text()
+    macros = pathlib.Path("templates/_macros.html").read_text()
+    assert 'href="https://x.com/kennethreitz42"' in macros
+    assert 'href="https://x.com/Requests_Token"' in macros
+    assert 'name="twitter:site" content="@Requests_Token"' in macros
+    assert 'name="twitter:creator" content="@kennethreitz42"' in macros
+    assert "https://x.com/Requests_Token" in macros and "https://x.com/kennethreitz42" in macros
+    assert '"sameAs":["https://x.com/Requests_Token","https://x.com/kennethreitz42"]' in macros
     assert "Anyone else claiming to speak for $requests is not official" in html
-    assert "There isn’t one yet." in html
+    assert "There isn’t one yet." not in pathlib.Path("templates/home.html").read_text()
+    assert "There isn’t one yet." not in pathlib.Path("templates/faq.html").read_text()
+    assert "There isn’t one yet." not in pathlib.Path("templates/base.html").read_text()
     assert "https://x.com/requeststoken" not in html.lower()
     assert "TODO" not in html
 

@@ -1,8 +1,8 @@
 {% extends "base.html" %}
-{% from "_macros.html" import pagehead %}
+{% from "_macros.html" import pagehead, x, project_x %}
 {% block title %}FAQ — requeststoken.org{% endblock %}
 {% block path %}/faq{% endblock %}
-{% block description %}Plain answers about $requests: the official account, the utility, what’s next, who created it, creator fees, and the lock.{% endblock %}
+{% block description %}Plain answers about $requests: the official accounts, the utility, what’s next, who created it, creator fees, and the lock.{% endblock %}
 {% block content %}
 {{ pagehead("/faq", "Questions, answered plainly", "Short answers, using only what can be checked.") }}
 <section class="band" id="faq" aria-labelledby="faq-title">
@@ -10,7 +10,7 @@
     <h2 id="faq-title" class="visually-hidden">FAQ</h2>
     <details open id="official-account">
       <summary><h3>Is there an official $requests X account?</h3></summary>
-      <p>Not yet. We’re planning to launch an official X account soon. There isn’t one today. Accounts already using the name, including @RequestsToken, are not official. Watch this site for the announcement.</p>
+      <p>Yes. {{ project_x() }} is the project’s account, and {{ x() }} is Kenneth’s personal account. Both are official. @RequestsToken (no underscore) and requeststoken.com are not official.</p>
     </details>
     <details open id="utility">
       <summary><h3>What’s the utility?</h3></summary>

@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "_macros.html" import ext %}
+{% from "_macros.html" import ext, x, project_x %}
 {% block content %}
 <section class="pitch" id="support" aria-labelledby="support-title">
   <div class="shell">
@@ -60,7 +60,8 @@
       <a class="hero-logo" href="https://requests.readthedocs.io/" target="_blank" rel="noopener noreferrer"><img src="/static/img/requests-caduceus.webp" width="512" height="512" alt="Requests: HTTP for Humans logo"></a>
       <ul class="trust-strip">
         <li><a href="#lock"><span class="trust-k">Locked</span> 10.7% of supply until Feb 14, 2027</a> <a class="trust-src" href="https://solscan.io/account/BaCrGRdrxHrovQjEK8D4PmjWPVCbeaZUPRKvPJ4WW5vo" target="_blank" rel="noopener noreferrer">Solscan</a></li>
-        <li><a href="/faq#official-account"><span class="trust-k">Official X</span> Not yet. Announced here.</a></li>
+        <li><a href="https://x.com/Requests_Token" target="_blank" rel="noopener noreferrer"><span class="trust-k">Official X</span> @Requests_Token</a></li>
+        <li><a href="https://x.com/kennethreitz42" target="_blank" rel="noopener noreferrer"><span class="trust-k">Kenneth</span> @kennethreitz42, his personal account</a></li>
         <li><span><span class="trust-k">Only site</span> requeststoken.org</span></li>
       </ul>
     </div>
@@ -73,7 +74,7 @@
     <ul class="cards">
       <li><a class="card" href="/community"><span class="card-path">/community</span><span class="card-title">Community</span><span class="card-text">Five rules, the group chat on X, and how you can help.</span></a></li>
       <li><a class="card" href="/safety"><span class="card-path">/safety</span><span class="card-title">Safety</span><span class="card-text">Imposters, fake boosts, and the only official links.</span></a></li>
-      <li><a class="card" href="/faq"><span class="card-path">/faq</span><span class="card-title">FAQ</span><span class="card-text">The official account, the utility, and what’s next.</span></a></li>
+      <li><a class="card" href="/faq"><span class="card-path">/faq</span><span class="card-title">FAQ</span><span class="card-text">The official accounts, the utility, and what’s next.</span></a></li>
       <li><a class="card" href="/library"><span class="card-path">/library</span><span class="card-title">Requests</span><span class="card-text">The library, its history, and its download counts.</span></a></li>
       <li><a class="card" href="/about"><span class="card-path">/about</span><span class="card-title">About Kenneth</span><span class="card-text">Who he is, what’s been written about him, and his talks.</span></a></li>
       <li><a class="card" href="/updates"><span class="card-path">/updates</span><span class="card-title">Updates</span><span class="card-text">A short, dated record of what has changed.</span></a></li>
@@ -101,7 +102,7 @@
       </div>
       <p class="fees" id="fees">Creator fees from trading go to Kenneth Reitz. He uses them in two ways: buying more $requests, and supporting his growing family (for example, his wife needs a new car). This is a plain disclosure, not a promise of buybacks, price support, or returns.</p>
       <p>The official website is requeststoken.org. Since the community takeover on Oct 24, 2026, the DexScreener listing shows only requeststoken.org and @kennethreitz42.</p>
-      <p>We’re planning to launch an official X account soon. There isn’t one yet. Watch this site for the announcement. Anyone else claiming to speak for $requests is not official, including @RequestsToken.</p>
+      <p>The project’s official X account is {{ project_x() }}. Kenneth’s personal account is {{ x() }}. Both are official. Anyone else claiming to speak for $requests is not official, including @RequestsToken (no underscore). requeststoken.com is not this site.</p>
     </div>
     <aside class="lock-card" id="lock" aria-labelledby="lock-title">
       <p class="lock-kicker">Lock proof · Streamflow</p>
