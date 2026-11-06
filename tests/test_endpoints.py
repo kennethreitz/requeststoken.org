@@ -252,7 +252,10 @@ def test_support_pitch_is_honest_and_first():
     assert "infinitestate.com" not in home
     lowered = home.lower()
     assert "charity" not in lowered and "charitable" not in lowered
-    assert "We’re planning to launch an official X account soon." in home
+    assert "The project’s official X account is {{ project_x() }}." in home
+    assert "Kenneth’s personal account is {{ x() }}." in home
+    assert "@RequestsToken (no underscore)" in home
+    assert "We’re planning to launch an official X account soon." not in home
     assert 'rel="icon"' in pathlib.Path("templates/_macros.html").read_text()
 
 
@@ -311,7 +314,7 @@ def test_trust_strip_lock_card_and_timeline_markup():
     import pathlib
     html = site_source()
     assert "marked to confirm" not in html
-    assert 'class="trust-strip"' in html and "@kennethreitz42" in html
+    assert 'class="trust-strip"' in html and "@kennethreitz42" in html and "@Requests_Token" in html
     assert 'id="lock-progress"' in html and 'data-end="2027-02-14T05:00:00Z"' in html
     assert html.count('data-copy="') == 5
     assert "https://solscan.io/account/BaCrGRdrxHrovQjEK8D4PmjWPVCbeaZUPRKvPJ4WW5vo" in html
@@ -427,10 +430,12 @@ def test_faq_help_safety_updates_origin():
     for name in ("home", "faq", "library", "updates", "safety", "community"):
         assert pathlib.Path(f"templates/{name}.html").exists()
     assert "Is there an official $requests X account?" in html
-    assert "We’re planning to launch an official X account soon." in html
-    assert "There isn’t one today." in html
+    assert "is the project’s account" in html and "Kenneth’s personal account" in html
     assert "@RequestsToken" in html and "are not official" in html
-    assert "Watch this site for the announcement." in html
+    assert "no underscore" in html and "requeststoken.com" in html
+    assert "We’re planning to launch an official X account soon." not in html
+    assert "There isn’t one today." not in html
+    assert "Watch this site for the announcement." not in html
     assert "x.com/requeststoken" not in html.lower()
     assert "listed on this page first" not in html
     assert "What’s the utility?" in html and "no web3 features are planned" in html
@@ -473,6 +478,9 @@ def test_every_page_renders_with_nav_and_footer():
         html = response.text
         assert 'class="mainnav"' in html and 'id="links"' in html and CONTRACT in html
         assert "not financial advice" in html.lower()
+        assert 'href="https://x.com/Requests_Token"' in html
+        assert 'href="https://x.com/kennethreitz42"' in html
+        assert "Kenneth’s personal account" in html
         assert ' style="' not in html
         if path != "/":
             assert f'href="{path}" aria-current="page"' in html
@@ -493,6 +501,12 @@ def test_favicon_is_served_for_every_browser():
     for path in ("/", "/observatory", "/api"):
         html = api.requests.get(path).text
         assert 'rel="icon" href="/favicon.ico?v=' in html, path
+        assert 'name="twitter:site" content="@Requests_Token"' in html, path
+        assert 'name="twitter:creator" content="@kennethreitz42"' in html, path
+        if path != "/api":
+            assert '"sameAs":["https://x.com/Requests_Token","https://x.com/kennethreitz42"]' in html, path
+        else:
+            assert "<script" not in html, path
         assert 'href="/static/favicon.svg?v=' in html and 'type="image/svg+xml"' in html, path
         assert 'href="/static/favicon-32.png?v=' in html and 'sizes="32x32"' in html, path
         assert 'rel="apple-touch-icon" href="/apple-touch-icon.png?v=' in html, path

@@ -14,4 +14,13 @@
 </header>
 {%- endmacro %}
 {% macro x() -%}<a href="https://x.com/kennethreitz42" target="_blank" rel="noopener noreferrer">@kennethreitz42</a>{%- endmacro %}
+{% macro project_x() -%}<a href="https://x.com/Requests_Token" target="_blank" rel="noopener noreferrer">@Requests_Token</a>{%- endmacro %}
+{% macro social_meta() -%}
+<meta name="twitter:card" content="summary">
+<meta name="twitter:site" content="@Requests_Token">
+<meta name="twitter:creator" content="@kennethreitz42">
+{%- endmacro %}
+{% macro same_as() -%}
+<script type="application/ld+json">{{ '{"@context":"https://schema.org","@type":"WebSite","name":"requeststoken.org","url":"https://requeststoken.org/","sameAs":["https://x.com/Requests_Token","https://x.com/kennethreitz42"]}'|safe }}</script>
+{%- endmacro %}
 {% macro ext(href, text) -%}<a href="{{ href }}" target="_blank" rel="noopener noreferrer">{{ text }}</a>{%- endmacro %}

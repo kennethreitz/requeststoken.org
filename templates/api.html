@@ -1,4 +1,4 @@
-{%- from "_macros.html" import icons -%}
+{%- from "_macros.html" import icons, social_meta -%}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,6 +8,7 @@
   <meta name="description" content="Read-only JSON endpoints used by requeststoken.org, with an OpenAPI schema.">
   <meta name="theme-color" content="#101410">
   <link rel="canonical" href="https://requeststoken.org/api">
+  {{ social_meta() }}
   {{ icons(asset_version) }}
   <link rel="stylesheet" href="/static/css/site.css?v={{ asset_version }}">
   <link rel="stylesheet" href="/static/css/observatory.css?v={{ asset_version }}">

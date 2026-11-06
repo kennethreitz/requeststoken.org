@@ -1,4 +1,4 @@
-{%- from "_macros.html" import icons -%}
+{%- from "_macros.html" import icons, social_meta, same_as, x, project_x -%}
 {%- set nav = [
   ("community", "/community", "Community"),
   ("faq", "/faq", "FAQ"),
@@ -23,6 +23,8 @@
   <meta property="og:description" content="{{ self.description() }}">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://requeststoken.org{{ self.path() }}">
+  {{ social_meta() }}
+  {{ same_as() }}
   <link rel="preload" href="/static/fonts/outfit-normal-400.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/static/css/rt.css?v={{ asset_version }}">
   <script defer src="https://analytics.kennethreitz.org/script.js" data-website-id="b3e5361e-b5d5-4097-95a6-d9d9def5378a"></script>
@@ -54,7 +56,7 @@
       <div class="foot-grid">
         <div class="foot-intro">
           <p class="foot-mark"><span class="brand-dollar">$</span>requests</p>
-          <p>A community token named for Requests, HTTP for Humans. The only official site is requeststoken.org. There is no official X account yet. One is planned, and it will be announced here.</p>
+          <p>A community token named for Requests, HTTP for Humans. The only official site is requeststoken.org. On X, {{ project_x() }} is the project’s account and {{ x() }} is Kenneth’s personal account. Both are official.</p>
           <p class="foot-contract"><span>Contract</span> <code>{{ contract }}</code></p>
         </div>
         <div>

@@ -38,6 +38,16 @@ PRIMARY_LINKS = (
         "note": "The page you are on",
     },
     {
+        "label": "@Requests_Token",
+        "href": "https://x.com/Requests_Token",
+        "note": "The project's official X account",
+    },
+    {
+        "label": "@kennethreitz42",
+        "href": "https://x.com/kennethreitz42",
+        "note": "Kenneth's personal account",
+    },
+    {
         "label": "Source on GitHub",
         "href": "https://github.com/kennethreitz/requeststoken.org",
         "note": "The code for this site",
@@ -93,14 +103,17 @@ PRIMARY_LINKS = (
 # them as canonical; they are labeled that way on the page.
 PROFILE_LINKS = (
     {
-        "label": "Kenneth Reitz on X",
+        "label": "@kennethreitz42",
         "href": "https://x.com/kennethreitz42",
-        "note": "Published on the token's DexScreener profile",
+        "note": "Kenneth's personal account, published on the token's DexScreener profile",
     },
 )
 
 # Accounts known to be fraudulent / not affiliated. Never shown on the site,
 # even if they appear on the DexScreener profile.
+# @RequestsToken (no underscore) is not official. @Requests_Token, with the
+# underscore, is the project account and must stay visible. The blocked
+# string has no underscore, so it does not match requests_token.
 BLOCKED_HANDLES = ("requeststoken",)
 
 
