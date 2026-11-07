@@ -22,17 +22,24 @@ from requeststoken.config import (
     DEX_PAGE,
     ROOT,
 )
-from requeststoken.data import Services, unavailable_stats, unavailable_token
+from requeststoken.data import (
+    Services,
+    unavailable_candles,
+    unavailable_stats,
+    unavailable_token,
+)
 from requeststoken.observatory import DownloadObservatory, adoption_manifest
 
 logger = logging.getLogger("requeststoken")
 
 _POOL = ThreadPoolExecutor(max_workers=4, thread_name_prefix="upstream")
 
+# The chart library paints its canvas by setting element styles. Those are
+# style attributes, not scripts; script-src stays limited to this origin.
 _CSP = (
     "default-src 'self'; "
     "img-src 'self' data:; "
-    "style-src 'self'; "
+    "style-src 'self' 'unsafe-inline'; "
     "font-src 'self'; "
     "script-src 'self' https://analytics.kennethreitz.org; "
     "connect-src 'self' https://analytics.kennethreitz.org; "
@@ -189,6 +196,18 @@ def create_app(services: Services | None = None, observatory: DownloadObservator
             "Market data is temporarily unavailable.",
         )
 
+    @api.get("/api/candles", **api_schema.ROUTES["/api/candles"])
+    def candles(req, resp):
+        timeframe = _candle_timeframe(req)
+        body = _section(
+            lambda: services.candles(timeframe),
+            lambda detail: unavailable_candles(detail, timeframe),
+            "Price history is temporarily unavailable.",
+        )
+        max_age = "60" if body.get("available") else "15"
+        resp.headers["Cache-Control"] = f"public, max-age={max_age}"
+        resp.media = body
+
     @api.get("/api/requests", **api_schema.ROUTES["/api/requests"])
     def requests_stats(req, resp):
         resp.headers["Cache-Control"] = "public, max-age=300"
@@ -259,6 +278,13 @@ def lock_status(now: datetime | None = None) -> dict:
         "days_left": days_left,
         "label": f"{days_left} days to unlock" if days_left else "Unlock date reached",
     }
+
+
+def _candle_timeframe(req) -> str:
+    raw = req.params.get("timeframe", "1h")
+    if isinstance(raw, (list, tuple)):
+        raw = raw[-1] if raw else "1h"
+    return str(raw or "1h").strip().lower() or "1h"
 
 
 def _section(loader, fallback, detail="Market data is temporarily unavailable."):
