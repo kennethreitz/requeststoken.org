@@ -10,7 +10,7 @@ from datetime import datetime, timezone
 import httpx
 
 from requeststoken.config import CONTRACT, DEX_API, PYPI_OVERALL, PYPI_RECENT
-from requeststoken.data import ManualClock, Services, TtlCache
+from requeststoken.data import ManualClock, Services, TtlCache, ohlcv_url
 from requeststoken.web import create_app
 
 PAIR = {
@@ -179,6 +179,232 @@ def test_token_endpoint_rejects_a_mismatched_first_pair():
     body = api.requests.get("/api/token").json()
     assert body["available"] is False
     assert "does not match" in body["detail"]
+
+
+POOL = "6Bs7VnSBJPjKjYG7FLfRd1KXEKRB92s7MaxNngC9M9Bh"
+SOL = "So11111111111111111111111111111111111111112"
+HOUR = ohlcv_url(POOL, "hour")
+DAY = ohlcv_url(POOL, "day")
+
+
+def _near(actual, expected):
+    assert abs(actual - expected) < 1e-12
+
+
+def _pair_book(address):
+    copied = json.loads(json.dumps(PAIR))
+    copied["pairAddress"] = address
+    return {"pairs": [copied, {"pairAddress": "9" * 40, "baseToken": {"address": "not-this-token"}}]}
+
+
+def _gecko(rows, base=CONTRACT, quote=SOL):
+    return {
+        "data": {"attributes": {"ohlcv_list": rows}},
+        "meta": {
+            "base": {"address": base, "symbol": "requests"},
+            "quote": {"address": quote, "symbol": "SOL"},
+        },
+    }
+
+
+CANDLES = [
+    [1794067200, 0.000046, 0.000047, 0.000045, 0.0000465, 12.5],
+    [1794063600, 0.000044, 0.000045, 0.000043, 0.000044, 8],
+    ["nope", 1, 1, 1, 1, 1],
+    [1794060000, 0, 1, 1, 1, 1],
+]
+
+
+def test_candles_use_the_first_pair_and_sort_ohlc():
+    api, client = build({
+        DEX_API: [FakeResponse(_pair_book(POOL))],
+        HOUR: [FakeResponse(_gecko(CANDLES))],
+    })
+    response = api.requests.get("/api/candles")
+    assert response.status_code == 200
+    assert response.headers["content-type"].startswith("application/json")
+    assert response.headers["cache-control"] == "public, max-age=60"
+    body = response.json()
+    assert body["available"] is True
+    assert body["stale"] is False
+    assert body["source"] == "geckoterminal"
+    assert body["contract"] == CONTRACT
+    assert body["pair_address"] == POOL
+    assert body["timeframe"] == "1h"
+    assert body["timeframe_label"] == "1H"
+    assert body["currency"] == "usd"
+    assert body["chart_url"] == "https://www.geckoterminal.com/solana/pools/" + POOL
+    assert [row["time"] for row in body["candles"]] == [1794063600, 1794067200]
+    _near(body["candles"][0]["open"], 0.000044)
+    _near(body["candles"][1]["close"], 0.0000465)
+    assert body["candles"][1]["volume"] == 12.5
+    assert client.calls[0]["url"] == DEX_API
+    gecko = client.calls[1]
+    assert gecko["url"] == HOUR
+    assert gecko["params"]["aggregate"] == 1
+    assert gecko["params"]["limit"] == 168
+    assert gecko["params"]["currency"] == "usd"
+    assert gecko["params"]["token"] == "base"
+    assert gecko["headers"]["Accept"] == "application/json;version=20230203"
+    assert "9" * 40 not in gecko["url"]
+
+
+def test_four_hour_and_daily_candles_pick_their_aggregate():
+    api, client = build({
+        DEX_API: [FakeResponse(_pair_book(POOL)), FakeResponse(_pair_book(POOL))],
+        HOUR: [FakeResponse(_gecko(CANDLES))],
+        DAY: [FakeResponse(_gecko(CANDLES))],
+    })
+    four = api.requests.get("/api/candles?timeframe=4H").json()
+    assert four["timeframe"] == "4h"
+    assert four["timeframe_label"] == "4H"
+    assert client.calls[1]["params"]["aggregate"] == 4
+    assert client.calls[1]["params"]["limit"] == 180
+    daily = api.requests.get("/api/candles?timeframe=1d").json()
+    assert daily["timeframe"] == "1d"
+    assert client.calls[-1]["url"] == DAY
+    assert client.calls[-1]["params"]["aggregate"] == 1
+
+
+def test_candles_cache_then_serve_stale_then_retry():
+    clock = ManualClock()
+    api, client = build({
+        DEX_API: [
+            FakeResponse(_pair_book(POOL)),
+            RuntimeError("dex"),
+            FakeResponse(_pair_book(POOL)),
+        ],
+        HOUR: [
+            FakeResponse(_gecko(CANDLES)),
+            RuntimeError("gecko"),
+            FakeResponse(_gecko(CANDLES)),
+        ],
+    }, clock=clock)
+    first = api.requests.get("/api/candles?timeframe=1h").json()
+    second = api.requests.get("/api/candles?timeframe=1h").json()
+    assert second["candles"] == first["candles"]
+    assert len(client.calls) == 2
+
+    clock.advance(91)
+    stale = api.requests.get("/api/candles?timeframe=1h").json()
+    assert stale["available"] is True
+    assert stale["stale"] is True
+    assert stale["candles"][0]["time"] == first["candles"][0]["time"]
+    assert "last saved candles" in stale["detail"]
+    assert len(client.calls) == 4
+
+    clock.advance(10)
+    api.requests.get("/api/candles?timeframe=1h")
+    assert len(client.calls) == 4
+
+    clock.advance(46)
+    fresh = api.requests.get("/api/candles?timeframe=1h").json()
+    assert fresh["stale"] is False
+    assert len(client.calls) == 6
+
+
+def test_candles_fail_closed_without_calling_gecko_for_a_bad_pair_or_timeframe():
+    api, client = build({DEX_API: [FakeResponse(DEX)]})
+    response = api.requests.get("/api/candles?timeframe=1h")
+    missing = response.json()
+    assert missing["available"] is False
+    assert missing["candles"] == []
+    assert response.headers["cache-control"] == "public, max-age=15"
+    assert "temporarily unavailable" in missing["detail"]
+    assert all("geckoterminal" not in call["url"] for call in client.calls)
+
+    unknown, quiet = build({})
+    body = unknown.requests.get("/api/candles?timeframe=15m").json()
+    assert body["available"] is False
+    assert body["timeframe"] is None
+    assert body["candles"] == []
+    assert quiet.calls == []
+
+
+def test_candles_price_the_quote_side_when_that_side_is_the_token():
+    inverted = _gecko(CANDLES, base=SOL, quote=CONTRACT)
+    api, client = build({
+        DEX_API: [FakeResponse(_pair_book(POOL))],
+        HOUR: [FakeResponse(inverted), FakeResponse(inverted)],
+    })
+    body = api.requests.get("/api/candles?timeframe=1h").json()
+    assert body["available"] is True
+    assert body["pair_address"] == POOL
+    gecko = [call for call in client.calls if call["url"] == HOUR]
+    assert [call["params"]["token"] for call in gecko] == ["base", "quote"]
+
+
+def test_candles_reject_a_pool_that_does_not_contain_the_token():
+    foreign = _gecko(CANDLES, base=SOL, quote="not-this-token")
+    api, client = build({
+        DEX_API: [FakeResponse(_pair_book(POOL))],
+        HOUR: [FakeResponse(foreign), FakeResponse(foreign)],
+    })
+    body = api.requests.get("/api/candles").json()
+    assert body["available"] is False
+    assert body["candles"] == []
+    gecko = [call for call in client.calls if call["url"] == HOUR]
+    assert len(gecko) == 1
+
+
+def test_candles_empty_or_rate_limited_reads_do_not_invent_rows():
+    api, client = build({
+        DEX_API: [FakeResponse(_pair_book(POOL))],
+        HOUR: [FakeResponse(_gecko([]))],
+    })
+    empty = api.requests.get("/api/candles").json()
+    assert empty["available"] is False
+    assert empty["candles"] == []
+
+    limited, _calls = build({
+        DEX_API: [FakeResponse(_pair_book(POOL))],
+        HOUR: [FakeResponse({}, status_code=429)],
+    })
+    blocked = limited.requests.get("/api/candles").json()
+    assert blocked["available"] is False
+    assert "429" not in (blocked["detail"] or "")
+    assert "temporarily unavailable" in blocked["detail"]
+    assert client.calls[0]["url"] == DEX_API
+
+
+def test_candles_disk_cache_survives_a_later_outage(tmp_path):
+    disk = tmp_path / "cache.json"
+    clock = ManualClock()
+    api, _client = build({
+        DEX_API: [FakeResponse(_pair_book(POOL))],
+        HOUR: [FakeResponse(_gecko(CANDLES))],
+    }, clock=clock, disk=disk)
+    assert api.requests.get("/api/candles").json()["available"] is True
+
+    later, _client = build({
+        DEX_API: [RuntimeError("down")],
+        HOUR: [RuntimeError("down")],
+    }, clock=clock, disk=disk)
+    body = later.requests.get("/api/candles").json()
+    assert body["available"] is True
+    assert body["stale"] is True
+    assert body["pair_address"] == POOL
+    assert body["candles"][1]["volume"] == 12.5
+
+
+def test_market_chart_keeps_the_stats():
+    api, _client = build({DEX_API: [FakeResponse(DEX)]})
+    response = api.requests.get("/")
+    html = response.text
+    for stat in ("stat-mcap", "stat-price", "stat-change", "stat-liquidity", "stat-volume", "stat-activity"):
+        assert f'id="{stat}"' in html
+    assert 'id="market-chart"' in html
+    assert 'data-candle="1h"' in html and 'data-candle="4h"' in html and 'data-candle="1d"' in html
+    assert "lightweight-charts.standalone.production.js" in html
+    assert "/static/js/market-chart.js" in html
+    assert 'id="chart"' not in html
+    market = html.split('id="market"', 1)[1].split('id="disclaimer"', 1)[0]
+    assert "financial advice" not in market.lower()
+    assert "creator of the token" not in market.lower()
+    policy = response.headers["content-security-policy"]
+    assert "style-src 'self' 'unsafe-inline'" in policy
+    assert "script-src 'self'" in policy
+    assert "script-src 'unsafe-inline'" not in policy
 
 
 def test_requests_endpoint_without_key_uses_pypistats_and_drops_mirrors():

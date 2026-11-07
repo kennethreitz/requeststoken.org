@@ -81,6 +81,8 @@ binary is absent. Node is needed only for JavaScript tests, not deployment.
 
 The first object in `pairs` is the one displayed. The browser asks `/api/token` again about every 30 seconds. The server reuses a successful read for 20 seconds, and if a later read fails it keeps showing the last good one.
 
+`GET /api/candles?timeframe=1h` reads open/high/low/close and USD volume for that same pair from GeckoTerminal’s public API (no key). `timeframe` is `1h` (default, about a week of hourly candles), `4h` (about 30 days), or `1d` (daily candles). GeckoTerminal keeps roughly six months and at most 1000 candles per response, and this pool is newer than that, so the chart only goes back as far as the pair does. The keyless API is about 10 calls per minute; a successful read is reused for 90 seconds, and a failed read keeps the last good candles when it has them.
+
 ## Tests
 
 ```bash

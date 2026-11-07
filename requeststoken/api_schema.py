@@ -7,7 +7,8 @@ TITLE = "requeststoken.org public API"
 VERSION = "1.0.0"
 DESCRIPTION = (
     "Read-only JSON used by requeststoken.org: token market data relayed from "
-    "DexScreener, Requests download figures, and the download observatory. "
+    "DexScreener, candlestick history for that same pair from GeckoTerminal, "
+    "Requests download figures, and the download observatory. "
     "Figures are informational, may be delayed or unavailable, and are not "
     "financial advice or a promise of any return. No authentication; please "
     "cache responses and poll gently. JSON endpoints negotiate on the Accept "
@@ -91,6 +92,37 @@ OBSERVATORY = {
     "required": ["snapshot", "checkedAt", "status"],
 }
 
+CANDLE = {
+    "type": "object",
+    "properties": {
+        "time": {**I, "description": "Candle open time, as seconds since the Unix epoch (UTC)."},
+        "open": N, "high": N, "low": N, "close": N,
+        "volume": {**N, "description": "Volume for the candle, in US dollars."},
+    },
+    "required": ["time", "open", "high", "low", "close", "volume"],
+}
+
+CANDLES = {
+    "type": "object",
+    "properties": {
+        "available": {**B, "description": "False when candles could not be fetched. candles is then empty."},
+        "stale": {**B, "description": "True when a previously fetched series is being reused."},
+        "source": S,
+        "source_label": S,
+        "contract": S,
+        "pair_address": _nullable(S),
+        "timeframe": _nullable({"type": "string", "enum": ["1h", "4h", "1d"]}),
+        "timeframe_label": _nullable(S),
+        "currency": S,
+        "candles": {"type": "array", "items": CANDLE},
+        "chart_url": _nullable(S),
+        "detail": _nullable(S),
+        "fetched_at": _nullable(S),
+        "fetched_at_display": _nullable(S),
+    },
+    "required": ["available", "source", "contract", "candles"],
+}
+
 POST = {"type": "object", "properties": {
     "title": S, "link": {**S, "format": "uri", "description": "Always an https://kennethreitz.org/ URL."},
     "date": _nullable({**S, "format": "date"}), "excerpt": {**S, "description": "Plain text, no HTML."},
@@ -111,6 +143,33 @@ ROUTES = {
         summary="Token market data", tags=["Token"],
         description="Price, market cap, liquidity, 24h volume and trade counts for the token pair, relayed from DexScreener. Cached for 15 seconds.",
         responses=_ok("Market data, or an `available: false` placeholder", TOKEN),
+    ),
+    "/api/candles": dict(
+        summary="Token price candles", tags=["Token"],
+        description=(
+            "Open, high, low, close, and USD volume for the same pair as /api/token, "
+            "relayed from the public GeckoTerminal API. No API key. "
+            "The timeframe query is 1h (default, about a week of hourly candles), "
+            "4h (about 30 days), or 1d (daily candles, up to about six months, "
+            "and only as far back as the pair itself exists). "
+            "A successful read is reused for 90 seconds."
+        ),
+        openapi_extra={
+            "parameters": [
+                {
+                    "name": "timeframe",
+                    "in": "query",
+                    "required": False,
+                    "description": "Candle size. Defaults to 1h.",
+                    "schema": {
+                        "type": "string",
+                        "enum": ["1h", "4h", "1d"],
+                        "default": "1h",
+                    },
+                }
+            ]
+        },
+        responses=_ok("Candles, or an available false placeholder when the read fails", CANDLES),
     ),
     "/api/requests": dict(
         summary="Requests download figures", tags=["Downloads"],

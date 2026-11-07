@@ -8,6 +8,7 @@ so a later failed read can still show the last good figures.
 from __future__ import annotations
 
 import copy
+import math
 import orjson
 import logging
 import os
@@ -22,6 +23,10 @@ from requeststoken.config import (
     DEX_API,
     DEX_PAGE,
     DISK_CACHE,
+    GECKO_ACCEPT,
+    GECKO_API,
+    OHLCV_ERROR_TTL,
+    OHLCV_TTL,
     PACKAGE,
     PYPI_OVERALL,
     PYPI_RECENT,
@@ -49,6 +54,23 @@ _DEX_NAMES = {
 
 class UpstreamError(Exception):
     """A controlled failure whose message is safe to show on the page."""
+
+
+class WrongSide(Exception):
+    """GeckoTerminal priced the other token in the pool. Try the opposite side."""
+
+
+# Candle sizes the chart offers. Limits stay under GeckoTerminal's 1000-row cap.
+OHLCV_FRAMES = {
+    "1h": {"path": "hour", "aggregate": 1, "limit": 168, "label": "1H"},
+    "4h": {"path": "hour", "aggregate": 4, "limit": 180, "label": "4H"},
+    "1d": {"path": "day", "aggregate": 1, "limit": 180, "label": "1D"},
+}
+_POOL_ADDRESS = re.compile(r"^[1-9A-HJ-NP-Za-km-z]{32,48}$")
+
+
+def ohlcv_url(pair: str, path: str) -> str:
+    return f"{GECKO_API}/networks/solana/pools/{pair}/ohlcv/{path}"
 
 
 class SystemClock:
@@ -373,6 +395,119 @@ def unavailable_stats(detail: str) -> dict:
     }
 
 
+def unavailable_candles(detail: str, timeframe: str | None = None) -> dict:
+    frame = OHLCV_FRAMES.get(timeframe or "")
+    return {
+        "available": False,
+        "source": "geckoterminal",
+        "source_label": "GeckoTerminal",
+        "stale": False,
+        "contract": CONTRACT,
+        "pair_address": None,
+        "timeframe": timeframe if frame else None,
+        "timeframe_label": frame["label"] if frame else None,
+        "currency": "usd",
+        "candles": [],
+        "chart_url": None,
+        "detail": detail,
+        "fetched_at": None,
+        "fetched_at_display": None,
+    }
+
+
+def mark_candles_stale(body: dict) -> dict:
+    updated = copy.deepcopy(body)
+    updated["stale"] = True
+    updated["detail"] = "Showing the last saved candles because a fresh read failed."
+    return updated
+
+
+def _meta_address(meta: dict, side: str):
+    node = meta.get(side)
+    if isinstance(node, dict):
+        return node.get("address")
+    return None
+
+
+def _candle(row):
+    """One GeckoTerminal row: [time, open, high, low, close, volume]."""
+    if not isinstance(row, (list, tuple)) or len(row) < 6:
+        return None
+    try:
+        moment = int(float(row[0]))
+        open_, high, low, close = (float(row[1]), float(row[2]), float(row[3]), float(row[4]))
+        volume = float(row[5])
+    except (TypeError, ValueError, OverflowError):
+        return None
+    # Seconds, not milliseconds. The pool did not exist before 2024.
+    if moment < 1_700_000_000 or moment > 2_100_000_000:
+        return None
+    if not all(math.isfinite(price) and price > 0 for price in (open_, high, low, close)):
+        return None
+    if not math.isfinite(volume) or volume < 0:
+        return None
+    high = max(high, open_, close)
+    low = min(low, open_, close)
+    if high < low:
+        return None
+    return {
+        "time": moment,
+        "open": open_,
+        "high": high,
+        "low": low,
+        "close": close,
+        "volume": volume,
+    }
+
+
+def normalize_ohlcv(payload, *, side: str, pair: str, frame: dict, timeframe: str, fetched_at: datetime) -> dict:
+    if not isinstance(payload, dict):
+        raise UpstreamError("Price history is temporarily unavailable.")
+    meta = payload.get("meta") if isinstance(payload.get("meta"), dict) else {}
+    base = _meta_address(meta, "base")
+    quote = _meta_address(meta, "quote")
+    priced = base if side == "base" else quote
+    other = quote if side == "base" else base
+    if priced != CONTRACT:
+        if other == CONTRACT:
+            raise WrongSide()
+        raise UpstreamError("Price history is temporarily unavailable.")
+    data = payload.get("data") if isinstance(payload.get("data"), dict) else {}
+    attributes = data.get("attributes") if isinstance(data.get("attributes"), dict) else {}
+    rows = attributes.get("ohlcv_list")
+    if not isinstance(rows, list) or not rows:
+        raise UpstreamError("Price history is temporarily unavailable.")
+    candles = []
+    seen = set()
+    for row in rows:
+        candle = _candle(row)
+        if candle is None or candle["time"] in seen:
+            continue
+        seen.add(candle["time"])
+        candles.append(candle)
+    if not candles:
+        raise UpstreamError("Price history is temporarily unavailable.")
+    candles.sort(key=lambda item: item["time"])
+    limit = int(frame["limit"])
+    if len(candles) > limit:
+        candles = candles[-limit:]
+    return {
+        "available": True,
+        "source": "geckoterminal",
+        "source_label": "GeckoTerminal",
+        "stale": False,
+        "contract": CONTRACT,
+        "pair_address": pair,
+        "timeframe": timeframe,
+        "timeframe_label": frame["label"],
+        "currency": "usd",
+        "candles": candles,
+        "chart_url": f"https://www.geckoterminal.com/solana/pools/{pair}",
+        "detail": None,
+        **_stamp_fields(fetched_at),
+    }
+
+
 def unavailable_token(detail: str) -> dict:
     body = {
         "available": False,
@@ -578,12 +713,20 @@ class Services:
         self.disk = disk
         self._token_lock = threading.Lock()
         self._stats_lock = threading.Lock()
+        self._ohlcv_lock = threading.Lock()
         self._disk_lock = threading.Lock()
         self._load_disk()
 
     def token(self) -> dict:
         with self._token_lock:
             return self._token_locked()
+
+    def candles(self, timeframe: str) -> dict:
+        frame = OHLCV_FRAMES.get(timeframe)
+        if frame is None:
+            return unavailable_candles("Price history is temporarily unavailable.")
+        with self._ohlcv_lock:
+            return self._candles_locked(timeframe, frame)
 
     def stats(self) -> dict:
         with self._stats_lock:
@@ -632,6 +775,87 @@ class Services:
         except Exception as exc:
             self._log_failure("pypistats", exc)
             return self._fail_stats("Download stats are temporarily unavailable.", now)
+
+    def _candles_locked(self, timeframe: str, frame: dict) -> dict:
+        now = self.clock.timestamp()
+        key = f"ohlcv:{timeframe}"
+        fresh = self.cache.fresh(key, now)
+        if fresh is not None:
+            return fresh
+        if not self.cache.ready(key, now):
+            held = self._held_candles(key)
+            if held is not None:
+                return held
+        pair = self._pair_address()
+        if pair is None:
+            previous = self.cache.peek(key) or {}
+            saved = previous.get("pair_address")
+            if isinstance(saved, str) and _POOL_ADDRESS.fullmatch(saved):
+                pair = saved
+        if pair is None:
+            return self._fail_candles(key, "Price history is temporarily unavailable.", now, timeframe)
+        try:
+            body = self._load_candles(frame, pair, timeframe)
+        except UpstreamError as exc:
+            logger.warning("geckoterminal: %s", exc)
+            return self._fail_candles(key, "Price history is temporarily unavailable.", now, timeframe)
+        except Exception as exc:
+            self._log_failure("geckoterminal", exc)
+            return self._fail_candles(key, "Price history is temporarily unavailable.", now, timeframe)
+        self._remember(key, body, now, OHLCV_TTL)
+        return body
+
+    def _pair_address(self) -> str | None:
+        body = self.token()
+        if not body.get("available"):
+            return None
+        chain = str(body.get("chain") or "solana").lower()
+        pair = body.get("pair_address")
+        if chain == "solana" and isinstance(pair, str) and _POOL_ADDRESS.fullmatch(pair):
+            return pair
+        return None
+
+    def _load_candles(self, frame: dict, pair: str, timeframe: str) -> dict:
+        for side in ("base", "quote"):
+            payload = self._get_json(
+                ohlcv_url(pair, frame["path"]),
+                headers={"Accept": GECKO_ACCEPT},
+                params={
+                    "aggregate": frame["aggregate"],
+                    "limit": frame["limit"],
+                    "currency": "usd",
+                    "token": side,
+                },
+            )
+            try:
+                return normalize_ohlcv(
+                    payload,
+                    side=side,
+                    pair=pair,
+                    frame=frame,
+                    timeframe=timeframe,
+                    fetched_at=self.clock.now(),
+                )
+            except WrongSide:
+                continue
+        raise UpstreamError("Price history is temporarily unavailable.")
+
+    def _held_candles(self, key: str) -> dict | None:
+        held = self.cache.peek(key)
+        if held is None:
+            return None
+        if held.get("available"):
+            return mark_candles_stale(held)
+        return held
+
+    def _fail_candles(self, key: str, message: str, now: float, timeframe: str) -> dict:
+        held = self.cache.peek(key)
+        if held and held.get("available"):
+            self.cache.hold(key, now, OHLCV_ERROR_TTL)
+            return mark_candles_stale(held)
+        failure = unavailable_candles(message, timeframe)
+        self.cache.store(key, failure, now, OHLCV_ERROR_TTL)
+        return failure
 
     def _held(self, key: str) -> dict | None:
         held = self.cache.peek(key)
@@ -688,8 +912,9 @@ class Services:
             return
         if not isinstance(saved, dict):
             return
-        for key in ("token", "stats"):
-            value = saved.get(key)
+        for key, value in saved.items():
+            if key not in ("token", "stats") and not (isinstance(key, str) and key.startswith("ohlcv:")):
+                continue
             if isinstance(value, dict) and value.get("available"):
                 self.cache.remember_expired(key, value)
 

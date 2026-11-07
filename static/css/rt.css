@@ -326,6 +326,23 @@ a.card:hover { border-color: var(--gold); color: var(--ink); transform: translat
 .pair-line { color: var(--muted); font-size: 0.95rem; max-width: 72ch; }
 .status { font: 0.78rem var(--mono); color: var(--muted); }
 .unavailable { padding: 1rem 1.2rem; border: 1px solid var(--line-2); border-radius: var(--radius); color: var(--muted); }
+
+.market-chart { margin: 1.6rem 0 0.35rem; }
+.market-chart-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.65rem 1rem; }
+.market-chart-kicker { margin: 0; font: 500 0.72rem/1.3 var(--mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+.chart-ranges { display: flex; gap: 0.35rem; }
+.chart-range { min-height: 2.25rem; min-width: 2.75rem; padding: 0.35rem 0.85rem; border-radius: 999px; border: 1px solid var(--line-2); background: transparent; color: var(--muted); font: 500 0.82rem/1 var(--mono); letter-spacing: 0.04em; cursor: pointer; }
+.chart-range:hover { border-color: var(--gold); color: var(--ink); }
+.chart-range.is-on { background: var(--gold); border-color: var(--gold); color: #15130b; }
+.chart-legend { margin: 0.55rem 0; font: 0.75rem/1.45 var(--mono); color: var(--muted); font-variant-numeric: tabular-nums; }
+.market-chart-canvas { width: 100%; height: 22rem; border: 1px solid var(--line); border-radius: var(--radius); background: var(--raise); overflow: hidden; touch-action: pan-y; }
+.chart-message { margin: 0.55rem 0 0; color: var(--muted); }
+.chart-note { margin: 0.45rem 0 0; color: var(--muted); font-size: 0.88rem; }
+.chart-source { margin: 0.75rem 0 0; max-width: 68ch; }
+@media (max-width: 640px) {
+  .market-chart-canvas { height: 16.5rem; }
+  .chart-legend { font-size: 0.68rem; }
+}
 .obs-cta-row { margin-top: 1.5rem; }
 
 /* Disclaimer */

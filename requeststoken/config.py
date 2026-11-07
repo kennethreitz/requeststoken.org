@@ -27,6 +27,12 @@ USER_AGENT = "requeststoken.org/1.0 (+https://requeststoken.org)"
 # Successful DexScreener reads are reused for a little under the 30s poll.
 TOKEN_TTL = 20
 TOKEN_ERROR_TTL = 15
+# GeckoTerminal's keyless API is about 10 calls per minute. Candles move
+# slower than the headline price, so a successful read is reused longer.
+GECKO_API = "https://api.geckoterminal.com/api/v2"
+GECKO_ACCEPT = "application/json;version=20230203"
+OHLCV_TTL = 90
+OHLCV_ERROR_TTL = 45
 # Download totals move on a daily cadence.
 STATS_TTL = 15 * 60
 STATS_ERROR_TTL = 60

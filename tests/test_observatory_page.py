@@ -39,7 +39,9 @@ def test_openapi_schema_and_docs_page(monkeypatch):
     client = TestClient(create_app())
     spec = client.get("/openapi.json").json()
     assert spec["info"]["title"] == "requeststoken.org public API"
-    assert set(spec["paths"]) == {"/api/token", "/api/requests", "/api/observatory", "/api/writing"}
+    assert set(spec["paths"]) == {"/api/token", "/api/candles", "/api/requests", "/api/observatory", "/api/writing"}
+    candle = spec["paths"]["/api/candles"]["get"]
+    assert candle["parameters"][0]["schema"]["enum"] == ["1h", "4h", "1d"]
     status = spec["paths"]["/api/observatory"]["get"]["responses"]["200"]["content"]["application/json"]["schema"]
     assert status["properties"]["status"]["enum"] == ["current", "cached", "fallback"]
     docs = client.get("/api")
@@ -52,7 +54,7 @@ def test_openapi_schema_and_docs_page(monkeypatch):
 def test_json_endpoints_negotiate_yaml(monkeypatch):
     monkeypatch.delenv("REDIS_URL", raising=False)
     client = TestClient(create_app())
-    for path in ("/api/token", "/api/requests", "/api/observatory", "/health"):
+    for path in ("/api/token", "/api/candles", "/api/requests", "/api/observatory", "/health"):
         assert client.get(path).headers["content-type"].startswith("application/json")
         yaml = client.get(path, headers={"Accept": "application/x-yaml"})
         assert yaml.status_code == 200 and yaml.headers["content-type"].startswith("application/yaml")
