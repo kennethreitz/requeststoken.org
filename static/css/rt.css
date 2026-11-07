@@ -262,6 +262,7 @@ h2:hover .anchor, h3:hover .anchor, .anchor:focus { opacity: 1; }
 /* Hero */
 .hero { padding: clamp(3rem, 9vw, 6.5rem) 0 clamp(3rem, 7vw, 5rem); border-bottom: 1px solid var(--line); }
 .pitch + .hero { padding-top: clamp(2.25rem, 6vw, 4rem); }
+.hero + .band { padding-top: clamp(2.25rem, 5vw, 3.5rem); }
 .hero-grid { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: clamp(2rem, 5vw, 4.5rem); align-items: center; }
 @media (max-width: 900px) { .hero-grid { grid-template-columns: 1fr; } }
 .kicker { font: 500 0.82rem/1 var(--mono); letter-spacing: 0.14em; text-transform: uppercase; color: var(--sage); margin-bottom: 1.25rem; }
@@ -318,9 +319,9 @@ a.card:hover { border-color: var(--gold); color: var(--ink); transform: translat
 
 /* Market / stats */
 .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr)); gap: 1px; margin: 2rem 0 1.25rem; background: var(--line); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
-.stat { background: var(--bg-2); padding: 1.1rem 1.2rem; }
+.stat { background: var(--bg-2); padding: 1.1rem 1.2rem; container-type: inline-size; }
 .stat dt { font: 500 0.72rem/1.3 var(--mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
-.stat dd { margin: 0.35rem 0 0; font: italic 500 1.7rem/1.15 var(--serif); font-variant-numeric: tabular-nums; }
+.stat dd { margin: 0.35rem 0 0; font: italic 500 clamp(1.05rem, 10.5cqi, 1.7rem)/1.15 var(--serif); font-variant-numeric: tabular-nums; }
 .stat .fine { margin: 0.3rem 0 0; }
 .change.up { color: var(--sage); } .change.down { color: var(--clay); }
 .pair-line { color: var(--muted); font-size: 0.95rem; max-width: 72ch; }
@@ -329,9 +330,21 @@ a.card:hover { border-color: var(--gold); color: var(--ink); transform: translat
 
 .market-chart { margin: 1.6rem 0 0.35rem; }
 .market-chart-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.65rem 1rem; }
+.market-chart-heading { display: flex; flex-wrap: wrap; align-items: center; gap: 0.35rem 0.8rem; }
 .market-chart-kicker { margin: 0; font: 500 0.72rem/1.3 var(--mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
-.chart-ranges { display: flex; gap: 0.35rem; }
-.chart-range { min-height: 2.25rem; min-width: 2.75rem; padding: 0.35rem 0.85rem; border-radius: 999px; border: 1px solid var(--line-2); background: transparent; color: var(--muted); font: 500 0.82rem/1 var(--mono); letter-spacing: 0.04em; cursor: pointer; }
+.chart-live { display: inline-flex; align-items: center; gap: 0.4rem; margin: 0; font: 500 0.72rem/1.3 var(--mono); letter-spacing: 0.04em; color: var(--muted); }
+.chart-live-dot { width: 0.45rem; height: 0.45rem; border-radius: 50%; background: var(--muted); flex: none; }
+.chart-live.is-live { color: var(--sage); }
+.chart-live.is-live .chart-live-dot { background: var(--sage); }
+@media (prefers-reduced-motion: no-preference) {
+  .chart-live.is-live .chart-live-dot { animation: chart-live-pulse 1.8s ease-out infinite; }
+}
+@keyframes chart-live-pulse {
+  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--sage) 55%, transparent); }
+  100% { box-shadow: 0 0 0 0.45rem color-mix(in srgb, var(--sage) 0%, transparent); }
+}
+.chart-ranges { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+.chart-range { min-height: 2.25rem; min-width: 2.6rem; padding: 0.35rem 0.7rem; border-radius: 999px; border: 1px solid var(--line-2); background: transparent; color: var(--muted); font: 500 0.82rem/1 var(--mono); letter-spacing: 0.04em; cursor: pointer; }
 .chart-range:hover { border-color: var(--gold); color: var(--ink); }
 .chart-range.is-on { background: var(--gold); border-color: var(--gold); color: #15130b; }
 .chart-legend { margin: 0.55rem 0; font: 0.75rem/1.45 var(--mono); color: var(--muted); font-variant-numeric: tabular-nums; }

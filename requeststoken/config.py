@@ -27,12 +27,23 @@ USER_AGENT = "requeststoken.org/1.0 (+https://requeststoken.org)"
 # Successful DexScreener reads are reused for a little under the 30s poll.
 TOKEN_TTL = 20
 TOKEN_ERROR_TTL = 15
-# GeckoTerminal's keyless API is about 10 calls per minute. Candles move
-# slower than the headline price, so a successful read is reused longer.
+# GeckoTerminal's keyless API is about 10 calls per minute. Every visitor
+# shares one cached series per timeframe, so client polling does not multiply
+# upstream reads. 1m stays short enough for the open candle to move. The
+# slower frames are reused for about a minute. 7d is a window on the 1h series
+# and has no TTL of its own. A process-wide cap stays under the keyless limit
+# even when every timeframe is requested together. A failed read keeps the
+# last good series.
 GECKO_API = "https://api.geckoterminal.com/api/v2"
 GECKO_ACCEPT = "application/json;version=20230203"
-OHLCV_TTL = 90
+OHLCV_TTL = {
+    "1m": 18,
+    "1h": 60,
+    "4h": 60,
+    "1d": 60,
+}
 OHLCV_ERROR_TTL = 45
+GECKO_MAX_PER_MINUTE = 8
 # Download totals move on a daily cadence.
 STATS_TTL = 15 * 60
 STATS_ERROR_TTL = 60

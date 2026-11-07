@@ -41,7 +41,9 @@ def test_openapi_schema_and_docs_page(monkeypatch):
     assert spec["info"]["title"] == "requeststoken.org public API"
     assert set(spec["paths"]) == {"/api/token", "/api/candles", "/api/requests", "/api/observatory", "/api/writing"}
     candle = spec["paths"]["/api/candles"]["get"]
-    assert candle["parameters"][0]["schema"]["enum"] == ["1h", "4h", "1d"]
+    assert candle["parameters"][0]["schema"]["enum"] == ["1m", "1h", "4h", "1d", "7d"]
+    body_schema = candle["responses"]["200"]["content"]["application/json"]["schema"]
+    assert body_schema["properties"]["timeframe"]["enum"] == ["1m", "1h", "4h", "1d", "7d"]
     status = spec["paths"]["/api/observatory"]["get"]["responses"]["200"]["content"]["application/json"]["schema"]
     assert status["properties"]["status"]["enum"] == ["current", "cached", "fallback"]
     docs = client.get("/api")

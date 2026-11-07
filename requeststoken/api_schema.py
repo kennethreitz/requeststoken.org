@@ -111,7 +111,7 @@ CANDLES = {
         "source_label": S,
         "contract": S,
         "pair_address": _nullable(S),
-        "timeframe": _nullable({"type": "string", "enum": ["1h", "4h", "1d"]}),
+        "timeframe": _nullable({"type": "string", "enum": ["1m", "1h", "4h", "1d", "7d"]}),
         "timeframe_label": _nullable(S),
         "currency": S,
         "candles": {"type": "array", "items": CANDLE},
@@ -149,10 +149,15 @@ ROUTES = {
         description=(
             "Open, high, low, close, and USD volume for the same pair as /api/token, "
             "relayed from the public GeckoTerminal API. No API key. "
-            "The timeframe query is 1h (default, about a week of hourly candles), "
-            "4h (about 30 days), or 1d (daily candles, up to about six months, "
-            "and only as far back as the pair itself exists). "
-            "A successful read is reused for 90 seconds."
+            "timeframe is 1m (about four hours of one-minute candles), "
+            "1h (default, about a week of hourly candles), "
+            "4h (about 30 days), 1d (daily candles, up to about six months, "
+            "and only as far back as the pair itself exists), or 7d "
+            "(the last seven days of the hourly series; it reuses the 1h "
+            "response and does not call GeckoTerminal again). "
+            "Visitors share one cached response per timeframe: about 18 seconds "
+            "for 1m and about 60 seconds for the others. A failed read keeps "
+            "the last good series."
         ),
         openapi_extra={
             "parameters": [
@@ -163,7 +168,7 @@ ROUTES = {
                     "description": "Candle size. Defaults to 1h.",
                     "schema": {
                         "type": "string",
-                        "enum": ["1h", "4h", "1d"],
+                        "enum": ["1m", "1h", "4h", "1d", "7d"],
                         "default": "1h",
                     },
                 }

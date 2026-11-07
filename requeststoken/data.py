@@ -25,6 +25,7 @@ from requeststoken.config import (
     DISK_CACHE,
     GECKO_ACCEPT,
     GECKO_API,
+    GECKO_MAX_PER_MINUTE,
     OHLCV_ERROR_TTL,
     OHLCV_TTL,
     PACKAGE,
@@ -61,10 +62,15 @@ class WrongSide(Exception):
 
 
 # Candle sizes the chart offers. Limits stay under GeckoTerminal's 1000-row cap.
+# 7d is not a GeckoTerminal timeframe. It is the last seven days of the hourly
+# series, so it reuses that cache and makes no extra upstream call.
+_WEEK = 7 * 24 * 60 * 60
 OHLCV_FRAMES = {
+    "1m": {"path": "minute", "aggregate": 1, "limit": 240, "label": "1m"},
     "1h": {"path": "hour", "aggregate": 1, "limit": 168, "label": "1H"},
     "4h": {"path": "hour", "aggregate": 4, "limit": 180, "label": "4H"},
     "1d": {"path": "day", "aggregate": 1, "limit": 180, "label": "1D"},
+    "7d": {"label": "7D", "source": "1h", "window": _WEEK},
 }
 _POOL_ADDRESS = re.compile(r"^[1-9A-HJ-NP-Za-km-z]{32,48}$")
 
@@ -422,6 +428,20 @@ def mark_candles_stale(body: dict) -> dict:
     return updated
 
 
+def window_candles(body: dict, timeframe: str, frame: dict) -> dict:
+    """A labeled view of a shared series. Does not touch the cached original."""
+    viewed = copy.deepcopy(body)
+    viewed["timeframe"] = timeframe
+    viewed["timeframe_label"] = frame["label"]
+    candles = viewed.get("candles") or []
+    window = frame.get("window")
+    if candles and window:
+        latest = candles[-1]["time"]
+        cutoff = latest - int(window)
+        viewed["candles"] = [candle for candle in candles if candle["time"] >= cutoff]
+    return viewed
+
+
 def _meta_address(meta: dict, side: str):
     node = meta.get(side)
     if isinstance(node, dict):
@@ -715,6 +735,8 @@ class Services:
         self._stats_lock = threading.Lock()
         self._ohlcv_lock = threading.Lock()
         self._disk_lock = threading.Lock()
+        self._ohlcv_side = None
+        self._gecko_times: list[float] = []
         self._load_disk()
 
     def token(self) -> dict:
@@ -726,6 +748,10 @@ class Services:
         if frame is None:
             return unavailable_candles("Price history is temporarily unavailable.")
         with self._ohlcv_lock:
+            source = frame.get("source")
+            if source:
+                shared = self._candles_locked(source, OHLCV_FRAMES[source])
+                return window_candles(shared, timeframe, frame)
             return self._candles_locked(timeframe, frame)
 
     def stats(self) -> dict:
@@ -802,7 +828,7 @@ class Services:
         except Exception as exc:
             self._log_failure("geckoterminal", exc)
             return self._fail_candles(key, "Price history is temporarily unavailable.", now, timeframe)
-        self._remember(key, body, now, OHLCV_TTL)
+        self._remember(key, body, now, OHLCV_TTL[timeframe])
         return body
 
     def _pair_address(self) -> str | None:
@@ -816,7 +842,11 @@ class Services:
         return None
 
     def _load_candles(self, frame: dict, pair: str, timeframe: str) -> dict:
-        for side in ("base", "quote"):
+        preferred = self._ohlcv_side if self._ohlcv_side in ("base", "quote") else "base"
+        other = "quote" if preferred == "base" else "base"
+        for side in (preferred, other):
+            if not self._take_gecko_budget():
+                raise UpstreamError("skipping a read to stay under the shared rate limit")
             payload = self._get_json(
                 ohlcv_url(pair, frame["path"]),
                 headers={"Accept": GECKO_ACCEPT},
@@ -828,7 +858,7 @@ class Services:
                 },
             )
             try:
-                return normalize_ohlcv(
+                body = normalize_ohlcv(
                     payload,
                     side=side,
                     pair=pair,
@@ -838,7 +868,19 @@ class Services:
                 )
             except WrongSide:
                 continue
+            self._ohlcv_side = side
+            return body
         raise UpstreamError("Price history is temporarily unavailable.")
+
+    def _take_gecko_budget(self) -> bool:
+        """At most GECKO_MAX_PER_MINUTE upstream OHLCV reads in a rolling minute."""
+        now = self.clock.timestamp()
+        cutoff = now - 60
+        self._gecko_times = [stamp for stamp in self._gecko_times if stamp > cutoff]
+        if len(self._gecko_times) >= GECKO_MAX_PER_MINUTE:
+            return False
+        self._gecko_times.append(now)
+        return True
 
     def _held_candles(self, key: str) -> dict | None:
         held = self.cache.peek(key)
