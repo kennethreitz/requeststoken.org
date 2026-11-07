@@ -285,7 +285,13 @@ def test_candles_cache_then_serve_stale_then_retry():
     assert second["candles"] == first["candles"]
     assert len(client.calls) == 2
 
-    clock.advance(91)
+    clock.advance(30)
+    cached = api.requests.get("/api/candles?timeframe=1h").json()
+    assert cached["stale"] is False
+    assert cached["candles"] == first["candles"]
+    assert len(client.calls) == 2
+
+    clock.advance(31)
     stale = api.requests.get("/api/candles?timeframe=1h").json()
     assert stale["available"] is True
     assert stale["stale"] is True
@@ -394,17 +400,214 @@ def test_market_chart_keeps_the_stats():
     for stat in ("stat-mcap", "stat-price", "stat-change", "stat-liquidity", "stat-volume", "stat-activity"):
         assert f'id="{stat}"' in html
     assert 'id="market-chart"' in html
-    assert 'data-candle="1h"' in html and 'data-candle="4h"' in html and 'data-candle="1d"' in html
+    assert 'id="market-chart-live"' in html
+    ranges = [html.index(f'data-candle="{size}"') for size in ("1m", "1h", "4h", "1d", "7d")]
+    assert ranges == sorted(ranges)
+    assert 'class="chart-range is-on" data-candle="1h"' in html
     assert "lightweight-charts.standalone.production.js" in html
     assert "/static/js/market-chart.js" in html
     assert 'id="chart"' not in html
-    market = html.split('id="market"', 1)[1].split('id="disclaimer"', 1)[0]
+    market = html.split('id="market"', 1)[1].split('id="start-title"', 1)[0]
     assert "financial advice" not in market.lower()
     assert "creator of the token" not in market.lower()
     policy = response.headers["content-security-policy"]
     assert "style-src 'self' 'unsafe-inline'" in policy
     assert "script-src 'self'" in policy
     assert "script-src 'unsafe-inline'" not in policy
+
+
+def test_homepage_puts_the_market_under_the_hero():
+    import pathlib
+    home = pathlib.Path("templates/home.html").read_text()
+    order = [
+        'id="support"',
+        'id="hero"',
+        'id="market"',
+        'id="start-title"',
+        'id="intentions"',
+        'id="disclaimer"',
+    ]
+    indexes = [home.index(token) for token in order]
+    assert indexes == sorted(indexes)
+    assert "The pair, right now" in home
+    assert home.index("The pair, right now") < home.index("Start here")
+    assert home.index("Start here") < home.index("What the coin is for")
+    # In-page anchors still point at the sections they name. The masthead
+    # stays a list of site pages, not a table of contents for this page.
+    base = pathlib.Path("templates/base.html").read_text()
+    nav = [
+        '("community", "/community", "Community")',
+        '("faq", "/faq", "FAQ")',
+        '("safety", "/safety", "Safety")',
+        '("updates", "/updates", "Updates")',
+        '("library", "/library", "Requests")',
+        '("projects", "/projects", "Projects")',
+        '("about", "/about", "About")',
+        '("press", "/press", "Press")',
+    ]
+    nav_at = [base.index(item) for item in nav]
+    assert nav_at == sorted(nav_at)
+    assert 'href="#market"' in home and 'href="#lock"' in home and 'href="#intentions"' in home
+
+
+def test_one_minute_candles_are_cached_briefly_and_shared():
+    clock = ManualClock()
+    minute = ohlcv_url(POOL, "minute")
+    api, client = build({
+        DEX_API: [FakeResponse(_pair_book(POOL))],
+        minute: [FakeResponse(_gecko(CANDLES)), FakeResponse(_gecko(CANDLES))],
+    }, clock=clock)
+    first = api.requests.get("/api/candles?timeframe=1m")
+    assert first.status_code == 200
+    assert first.headers["cache-control"] == "public, max-age=18"
+    body = first.json()
+    assert body["available"] is True
+    assert body["timeframe"] == "1m"
+    assert body["timeframe_label"] == "1m"
+    assert [row["time"] for row in body["candles"]] == [1794063600, 1794067200]
+    gecko = [call for call in client.calls if call["url"] == minute]
+    assert len(gecko) == 1
+    assert gecko[0]["params"]["aggregate"] == 1
+    assert gecko[0]["params"]["limit"] == 240
+    assert gecko[0]["params"]["currency"] == "usd"
+    assert gecko[0]["params"]["token"] == "base"
+
+    clock.advance(10)
+    again = api.requests.get("/api/candles?timeframe=1M").json()
+    assert again["candles"] == body["candles"]
+    assert len([call for call in client.calls if call["url"] == minute]) == 1
+
+    clock.advance(9)
+    refreshed = api.requests.get("/api/candles?timeframe=1m").json()
+    assert refreshed["stale"] is False
+    assert refreshed["available"] is True
+    assert len([call for call in client.calls if call["url"] == minute]) == 2
+
+
+LATEST = 1794067200
+WEEK = [
+    [LATEST - 8 * 24 * 3600, 0.00004, 0.000041, 0.000039, 0.00004, 1],
+    [LATEST - 7 * 24 * 3600, 0.000042, 0.000043, 0.000041, 0.000042, 2],
+    [LATEST - 3 * 24 * 3600, 0.000044, 0.000045, 0.000043, 0.000044, 8],
+    [LATEST, 0.000046, 0.000047, 0.000045, 0.0000465, 12.5],
+]
+
+
+def test_seven_day_window_reuses_the_hourly_cache():
+    api, client = build({
+        DEX_API: [FakeResponse(_pair_book(POOL))],
+        HOUR: [FakeResponse(_gecko(WEEK))],
+    })
+    hourly = api.requests.get("/api/candles?timeframe=1h")
+    assert hourly.headers["cache-control"] == "public, max-age=60"
+    hourly = hourly.json()
+    week = api.requests.get("/api/candles?timeframe=7D")
+    assert week.headers["cache-control"] == "public, max-age=60"
+    week = week.json()
+    assert [row["time"] for row in hourly["candles"]] == [row[0] for row in sorted(WEEK)]
+    assert [row["time"] for row in week["candles"]] == [
+        LATEST - 7 * 24 * 3600,
+        LATEST - 3 * 24 * 3600,
+        LATEST,
+    ]
+    assert week["timeframe"] == "7d"
+    assert week["timeframe_label"] == "7D"
+    assert week["pair_address"] == POOL
+    assert week["stale"] is False
+    gecko = [call for call in client.calls if "geckoterminal" in call["url"]]
+    assert len(gecko) == 1
+    assert gecko[0]["url"] == HOUR
+    assert gecko[0]["params"]["aggregate"] == 1
+    again = api.requests.get("/api/candles?timeframe=1h").json()
+    assert again["timeframe"] == "1h"
+    assert len(again["candles"]) == 4
+    assert len([call for call in client.calls if "geckoterminal" in call["url"]]) == 1
+
+
+def test_seven_day_comes_from_the_hourly_series_when_asked_first(tmp_path):
+    disk = tmp_path / "cache.json"
+    clock = ManualClock()
+    api, client = build({
+        DEX_API: [FakeResponse(_pair_book(POOL)), RuntimeError("dex")],
+        HOUR: [FakeResponse(_gecko(WEEK)), RuntimeError("gecko")],
+    }, clock=clock, disk=disk)
+    first = api.requests.get("/api/candles?timeframe=7d").json()
+    assert first["available"] is True
+    assert first["timeframe"] == "7d"
+    assert len(first["candles"]) == 3
+    saved = json.loads(disk.read_text())
+    assert set(saved) >= {"ohlcv:1h"}
+    assert "ohlcv:7d" not in saved
+    assert saved["ohlcv:1h"]["timeframe"] == "1h"
+
+    clock.advance(61)
+    stale = api.requests.get("/api/candles?timeframe=7d").json()
+    assert stale["available"] is True
+    assert stale["stale"] is True
+    assert stale["timeframe"] == "7d"
+    assert stale["candles"][0]["time"] == first["candles"][0]["time"]
+    assert "last saved candles" in stale["detail"]
+    assert len([call for call in client.calls if call["url"] == HOUR]) == 2
+
+
+def test_timeframes_share_one_upstream_read_each():
+    minute = ohlcv_url(POOL, "minute")
+    api, client = build({
+        DEX_API: [FakeResponse(_pair_book(POOL))],
+        minute: [FakeResponse(_gecko(CANDLES))],
+        HOUR: [FakeResponse(_gecko(WEEK)), FakeResponse(_gecko(CANDLES))],
+        DAY: [FakeResponse(_gecko(CANDLES))],
+    })
+    for size in ("1m", "1h", "4h", "1d", "7d", "1h", "7d", "1m"):
+        body = api.requests.get("/api/candles?timeframe=" + size).json()
+        assert body["available"] is True
+        assert body["timeframe"] == size
+    gecko = [call for call in client.calls if "geckoterminal" in call["url"]]
+    assert [(call["url"], call["params"]["aggregate"]) for call in gecko] == [
+        (minute, 1),
+        (HOUR, 1),
+        (HOUR, 4),
+        (DAY, 1),
+    ]
+
+
+def test_later_candle_reads_reuse_the_side_that_priced_the_token():
+    clock = ManualClock()
+    inverted = _gecko(CANDLES, base=SOL, quote=CONTRACT)
+    api, client = build({
+        DEX_API: [FakeResponse(_pair_book(POOL)), FakeResponse(_pair_book(POOL))],
+        HOUR: [FakeResponse(inverted), FakeResponse(inverted), FakeResponse(inverted)],
+    }, clock=clock)
+    assert api.requests.get("/api/candles?timeframe=1h").json()["available"] is True
+    clock.advance(61)
+    assert api.requests.get("/api/candles?timeframe=1h").json()["available"] is True
+    gecko = [call for call in client.calls if call["url"] == HOUR]
+    assert [call["params"]["token"] for call in gecko] == ["base", "quote", "quote"]
+
+
+def test_gecko_reads_stop_after_eight_in_a_minute():
+    clock = ManualClock()
+    services = Services(client=MapClient({}), cache=TtlCache(), clock=clock, env={}, disk=None)
+    assert [services._take_gecko_budget() for _ in range(8)] == [True] * 8
+    assert services._take_gecko_budget() is False
+    clock.advance(59)
+    assert services._take_gecko_budget() is False
+    clock.advance(2)
+    assert services._take_gecko_budget() is True
+
+
+def test_market_chart_script_updates_in_place_and_pauses_when_hidden():
+    import pathlib
+    from requeststoken.config import ROOT
+    script = (ROOT / "static/js/market-chart.js").read_text()
+    assert "visibilitychange" in script
+    assert "candleSeries.update" in script
+    assert "volumeSeries.update" in script
+    assert 'POLL_MS = { "1m": 25000' in script
+    assert '"7d": 60000' in script
+    assert "clearTimeout" in script
+    home = pathlib.Path("templates/home.html").read_text()
+    assert home.index('id="hero"') < home.index('id="market"') < home.index('id="start-title"')
 
 
 def test_requests_endpoint_without_key_uses_pypistats_and_drops_mirrors():

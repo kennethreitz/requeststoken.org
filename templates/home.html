@@ -68,6 +68,50 @@
   </div>
 </section>
 
+<section class="band" id="market" aria-labelledby="market-title">
+  <div class="shell">
+    <p class="eyebrow">The market</p>
+    <h2 id="market-title">The pair, right now <a class="anchor" href="#market" aria-label="Link to this section">#</a></h2>
+    <p class="deck">Price, market cap, liquidity, volume, and 24-hour buys and sells for the contract above, from DexScreener’s public API. The candlestick chart uses that same pair. The first pair in the DexScreener response is the one shown here. Read the numbers as information about the market.</p>
+    <p id="market-unavailable" class="unavailable" {% if token.available %}hidden{% endif %}>{{ token.detail or "Market data is temporarily unavailable." }}</p>
+    <dl class="stat-grid" id="market-grid" {% if not token.available %}hidden{% endif %}>
+      <div class="stat"><dt>Market cap</dt><dd id="stat-mcap">{{ token.market_cap_display }}</dd></div>
+      <div class="stat"><dt>Price</dt><dd id="stat-price">{{ token.price_display }}</dd><p class="fine" id="stat-native">{{ token.price_native_display }}</p></div>
+      <div class="stat"><dt>24h change</dt><dd id="stat-change" class="change {{ token.change_direction }}">{{ token.change_display }}</dd></div>
+      <div class="stat"><dt>Liquidity</dt><dd id="stat-liquidity">{{ token.liquidity_display }}</dd></div>
+      <div class="stat"><dt>24h volume</dt><dd id="stat-volume">{{ token.volume_display }}</dd></div>
+      <div class="stat"><dt>Buys / sells, 24h</dt><dd id="stat-activity">{{ token.activity_display }}</dd></div>
+    </dl>
+    <div class="market-chart" id="market-chart">
+      <div class="market-chart-bar">
+        <div class="market-chart-heading">
+          <p class="market-chart-kicker" id="market-chart-kicker">Price candles</p>
+          <p class="chart-live" id="market-chart-live" hidden>
+            <span class="chart-live-dot" aria-hidden="true"></span>
+            <span id="market-chart-live-text">Live</span>
+          </p>
+        </div>
+        <div class="chart-ranges" role="group" aria-label="Candle size">
+          <button type="button" class="chart-range" data-candle="1m" aria-pressed="false">1m</button>
+          <button type="button" class="chart-range is-on" data-candle="1h" aria-pressed="true">1H</button>
+          <button type="button" class="chart-range" data-candle="4h" aria-pressed="false">4H</button>
+          <button type="button" class="chart-range" data-candle="1d" aria-pressed="false">1D</button>
+          <button type="button" class="chart-range" data-candle="7d" aria-pressed="false">7D</button>
+        </div>
+      </div>
+      <p class="chart-legend" id="market-chart-legend" hidden></p>
+      <div id="market-chart-canvas" class="market-chart-canvas" hidden></div>
+      <p id="market-chart-message" class="chart-message">Price history loads in the browser.</p>
+      <p class="chart-note" id="market-chart-note" hidden></p>
+      <p class="fine chart-source">Candles for this pair, from <a id="market-chart-link" href="https://www.geckoterminal.com/" target="_blank" rel="noopener noreferrer">GeckoTerminal</a>. Bars along the bottom are volume in US dollars. Chart by <a href="https://www.tradingview.com/" target="_blank" rel="noopener noreferrer">TradingView</a>.</p>
+    </div>
+    <p class="pair-line"><a id="pair-link" href="{{ token.pair_url }}" target="_blank" rel="noopener noreferrer">View the pair on DexScreener</a> <span id="listed-on">{% if token.listed_on %}Pair listed {{ token.listed_on }}.{% endif %}</span></p>
+    <p class="pair-line" id="holders-line">Holder concentration: the 10 largest token accounts hold 42.0% of supply, including the PumpSwap pool (13.3%) and Kenneth’s lock escrow (10.7%); the other eight hold 18.0%. 388 accounts hold a balance. Source: Solana mainnet RPC, Token-2022 accounts for this mint, Oct 25, 2026 at 10:18 AM ET.</p>
+    <p class="pair-line" id="fomo-line">Also trade and follow on <a href="{{ fomo_page }}" target="_blank" rel="noopener noreferrer">fomo</a>.</p>
+    <p class="status" id="market-status">{{ token.status_display }}</p>
+  </div>
+</section>
+
 <section class="band start" aria-labelledby="start-title">
   <div class="shell">
     <h2 id="start-title" class="eyebrow">Start here</h2>
@@ -120,42 +164,6 @@
       <li><span class="addr-label">Streamflow program</span> <a class="addr" href="https://solscan.io/account/strmRqUCoQUgGUan5YhzUZa6KqdzwX5L6FpUxfmKg5m" target="_blank" rel="noopener noreferrer" title="strmRqUCoQUgGUan5YhzUZa6KqdzwX5L6FpUxfmKg5m">strm…Kg5m</a> <button type="button" class="copy copy-sm" data-copy="strmRqUCoQUgGUan5YhzUZa6KqdzwX5L6FpUxfmKg5m" aria-label="Copy streamflow program address">Copy</button></li>
       </ul>
     </aside>
-  </div>
-</section>
-
-<section class="band" id="market" aria-labelledby="market-title">
-  <div class="shell">
-    <p class="eyebrow">The market</p>
-    <h2 id="market-title">The pair, right now <a class="anchor" href="#market" aria-label="Link to this section">#</a></h2>
-    <p class="deck">Price, market cap, liquidity, volume, and 24-hour buys and sells for the contract above, from DexScreener’s public API. The candlestick chart uses that same pair. The first pair in the DexScreener response is the one shown here. Read the numbers as information about the market.</p>
-    <p id="market-unavailable" class="unavailable" {% if token.available %}hidden{% endif %}>{{ token.detail or "Market data is temporarily unavailable." }}</p>
-    <dl class="stat-grid" id="market-grid" {% if not token.available %}hidden{% endif %}>
-      <div class="stat"><dt>Market cap</dt><dd id="stat-mcap">{{ token.market_cap_display }}</dd></div>
-      <div class="stat"><dt>Price</dt><dd id="stat-price">{{ token.price_display }}</dd><p class="fine" id="stat-native">{{ token.price_native_display }}</p></div>
-      <div class="stat"><dt>24h change</dt><dd id="stat-change" class="change {{ token.change_direction }}">{{ token.change_display }}</dd></div>
-      <div class="stat"><dt>Liquidity</dt><dd id="stat-liquidity">{{ token.liquidity_display }}</dd></div>
-      <div class="stat"><dt>24h volume</dt><dd id="stat-volume">{{ token.volume_display }}</dd></div>
-      <div class="stat"><dt>Buys / sells, 24h</dt><dd id="stat-activity">{{ token.activity_display }}</dd></div>
-    </dl>
-    <div class="market-chart" id="market-chart">
-      <div class="market-chart-bar">
-        <p class="market-chart-kicker" id="market-chart-kicker">Price candles</p>
-        <div class="chart-ranges" role="group" aria-label="Candle size">
-          <button type="button" class="chart-range is-on" data-candle="1h" aria-pressed="true">1H</button>
-          <button type="button" class="chart-range" data-candle="4h" aria-pressed="false">4H</button>
-          <button type="button" class="chart-range" data-candle="1d" aria-pressed="false">1D</button>
-        </div>
-      </div>
-      <p class="chart-legend" id="market-chart-legend" hidden></p>
-      <div id="market-chart-canvas" class="market-chart-canvas" hidden></div>
-      <p id="market-chart-message" class="chart-message">Price history loads in the browser.</p>
-      <p class="chart-note" id="market-chart-note" hidden></p>
-      <p class="fine chart-source">Candles for this pair, from <a id="market-chart-link" href="https://www.geckoterminal.com/" target="_blank" rel="noopener noreferrer">GeckoTerminal</a>. Bars along the bottom are volume in US dollars. Chart by <a href="https://www.tradingview.com/" target="_blank" rel="noopener noreferrer">TradingView</a>.</p>
-    </div>
-    <p class="pair-line"><a id="pair-link" href="{{ token.pair_url }}" target="_blank" rel="noopener noreferrer">View the pair on DexScreener</a> <span id="listed-on">{% if token.listed_on %}Pair listed {{ token.listed_on }}.{% endif %}</span></p>
-    <p class="pair-line" id="holders-line">Holder concentration: the 10 largest token accounts hold 42.0% of supply, including the PumpSwap pool (13.3%) and Kenneth’s lock escrow (10.7%); the other eight hold 18.0%. 388 accounts hold a balance. Source: Solana mainnet RPC, Token-2022 accounts for this mint, Oct 25, 2026 at 10:18 AM ET.</p>
-    <p class="pair-line" id="fomo-line">Also trade and follow on <a href="{{ fomo_page }}" target="_blank" rel="noopener noreferrer">fomo</a>.</p>
-    <p class="status" id="market-status">{{ token.status_display }}</p>
   </div>
 </section>
 

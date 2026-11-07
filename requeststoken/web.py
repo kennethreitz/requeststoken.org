@@ -20,9 +20,11 @@ from requeststoken.config import (
     PUMP_PAGE,
     FOMO_PAGE,
     DEX_PAGE,
+    OHLCV_TTL,
     ROOT,
 )
 from requeststoken.data import (
+    OHLCV_FRAMES,
     Services,
     unavailable_candles,
     unavailable_stats,
@@ -204,8 +206,7 @@ def create_app(services: Services | None = None, observatory: DownloadObservator
             lambda detail: unavailable_candles(detail, timeframe),
             "Price history is temporarily unavailable.",
         )
-        max_age = "60" if body.get("available") else "15"
-        resp.headers["Cache-Control"] = f"public, max-age={max_age}"
+        resp.headers["Cache-Control"] = _candle_cache_control(timeframe, body)
         resp.media = body
 
     @api.get("/api/requests", **api_schema.ROUTES["/api/requests"])
@@ -278,6 +279,14 @@ def lock_status(now: datetime | None = None) -> dict:
         "days_left": days_left,
         "label": f"{days_left} days to unlock" if days_left else "Unlock date reached",
     }
+
+
+def _candle_cache_control(timeframe: str, body: dict) -> str:
+    if not body.get("available"):
+        return "public, max-age=15"
+    frame = OHLCV_FRAMES.get(timeframe) or {}
+    source = frame.get("source") or timeframe
+    return f"public, max-age={int(OHLCV_TTL.get(source, 60))}"
 
 
 def _candle_timeframe(req) -> str:

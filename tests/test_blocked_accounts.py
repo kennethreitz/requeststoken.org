@@ -105,6 +105,7 @@ def test_dexscreener_links_top_and_footer():
     from requeststoken.config import DEX_PAGE, PRIMARY_LINKS
     html = pathlib.Path("templates/home.html").read_text()
     top = html[: html.index('id="intentions"')]
+    assert top.index('id="hero"') < top.index('id="market"') < top.index("Start here")
     assert 'href="{{ dex_page }}"' in top
     dex = [l for l in PRIMARY_LINKS if l["label"] == "DexScreener"]
     assert dex and dex[0]["href"] == DEX_PAGE
