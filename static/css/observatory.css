@@ -25,7 +25,7 @@
 .obs-counter:nth-last-child(-n+2) { border-bottom: 0; }
 .obs-counter h3 { font-weight: 400; color: var(--muted); }
 .obs-number { font-family: var(--mono); font-size: clamp(1.25rem, 3.4vw, 2.6rem); letter-spacing: -.06em; margin: .8rem 0; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
-.obs-counter-total { background: rgba(228,195,106,.055); }
+.obs-counter-total { background: color-mix(in srgb, var(--gold) 8%, transparent); }
 .obs-counter-total .obs-number { color: var(--gold); }
 .obs-counter .obs-muted { font-size: .78rem; margin: 0; }
 .obs-utc { color: var(--gold-dim); }
@@ -78,7 +78,8 @@
 @media (max-width: 850px) { .obs-project-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 600px) {
   .obs-hero { padding-top: 2rem; gap: .5rem; }
-  .obs-hero img { width: 82px; height: 120px; }
+  .obs-hero { align-items: flex-start; }
+  .obs-hero img { width: 72px; height: 72px; border-radius: 12px; }
   .observatory h1 { font-size: clamp(2.5rem, 13vw, 4rem); }
   .obs-hero .lede { font-size: 1.1rem; }
   .obs-hero .obs-muted { font-size: .85rem; }
@@ -99,17 +100,50 @@
 }
 @media (prefers-reduced-motion: reduce) { .observatory { scroll-behavior: auto; } }
 
+.observatory .theme-toggle {
+  flex: none;
+  min-height: 2.5rem;
+  padding: 0.35rem 0.8rem;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--bg-raise);
+  color: var(--ink);
+  font: 500 0.72rem/1 var(--mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.observatory .theme-toggle:hover { border-color: var(--gold); color: var(--gold); }
+.theme-when-light { display: none; }
+@media (prefers-color-scheme: light) {
+  html:not([data-theme]) .theme-when-dark { display: none; }
+  html:not([data-theme]) .theme-when-light { display: inline; }
+}
+html[data-theme="light"] .theme-when-dark { display: none; }
+html[data-theme="light"] .theme-when-light { display: inline; }
+html[data-theme="dark"] .theme-when-light { display: none; }
+html[data-theme="dark"] .theme-when-dark { display: inline; }
+.observatory .bar { justify-content: flex-start; gap: 0.75rem 1rem; }
+.observatory .brand { order: 1; }
+.observatory .bar > nav { order: 2; margin-left: auto; }
+.observatory .theme-toggle { order: 3; }
+@media (max-width: 720px) {
+  .observatory .bar { align-items: flex-start; }
+  .observatory .theme-toggle { order: 2; margin-left: auto; }
+  .observatory .bar > nav { order: 3; flex-basis: 100%; margin-left: 0; justify-content: flex-start; }
+}
+
 /* API docs page */
-.api-docs .api-op { padding-block: 1.25rem; border-top: 1px solid rgba(255,255,255,.08); }
+.api-docs .api-op { padding-block: 1.25rem; border-top: 1px solid var(--line); }
 .api-docs .api-op h3 { margin: 0 0 .35rem; }
 .api-docs .api-fields { columns: 2 18rem; list-style: none; padding: 0; margin: .75rem 0 0; font-size: .9rem; }
 .api-docs .api-fields li { break-inside: avoid; margin: 0 0 .3rem; }
 .api-docs details summary { cursor: pointer; }
-.api-docs .api-example { overflow-x: auto; padding: 1rem; margin-top: 1rem; background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.08); border-radius: 8px; font-size: .85rem; }
+.api-docs .api-example { overflow-x: auto; padding: 1rem; margin-top: 1rem; background: var(--bg); border: 1px solid var(--line); border-radius: 8px; font-size: .85rem; }
 .obs-controls .obs-scale { display: flex; flex-direction: column; flex: 0 1 150px; gap: .4rem; color: var(--muted); font-size: .85rem; }
 .obs-segmented { display: flex; }
 .obs-segmented button { flex: 1; border-radius: 0; }
 .obs-segmented button:first-child { border-radius: 6px 0 0 6px; }
 .obs-segmented button:last-child { border-radius: 0 6px 6px 0; margin-left: -1px; }
-.obs-segmented button[aria-pressed="true"] { color: var(--bg, #101410); background: var(--gold); border-color: var(--gold); }
+.obs-segmented button[aria-pressed="true"] { color: var(--bg); background: var(--gold); border-color: var(--gold); }
 .obs-chart .chart-grid { stroke: var(--line); stroke-width: 1; stroke-dasharray: 2 4; opacity: .6; }

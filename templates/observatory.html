@@ -5,17 +5,40 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Requests — download history and project usage</title>
   <meta name="description" content="Source-reported Requests download history and 120 public projects with explanations and pinned source evidence.">
-  <meta name="theme-color" content="#101410">
+  <meta name="color-scheme" content="dark light">
+  <meta name="theme-color" content="#101614" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#f7f3ea" media="(prefers-color-scheme: light)">
   <link rel="canonical" href="https://requeststoken.org/observatory">
   <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+  <meta property="og:site_name" content="requeststoken.org">
+  <meta property="og:title" content="Requests — download history and project usage">
+  <meta property="og:description" content="Source-reported Requests download history and 120 public projects with explanations and pinned source evidence.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://requeststoken.org/observatory">
+  <meta property="og:image" content="https://requeststoken.org/static/img/og.png">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="$requests, the community token named for the Requests Python library.">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Requests — download history and project usage">
+  <meta name="twitter:description" content="Source-reported Requests download history and 120 public projects with explanations and pinned source evidence.">
+  <meta name="twitter:image" content="https://requeststoken.org/static/img/og.png">
+  <meta name="twitter:image:alt" content="$requests, the community token named for the Requests Python library.">
+  <script src="/static/js/theme.js?v={{ asset_version }}"></script>
   <link rel="stylesheet" href="/static/css/site.css?v={{ asset_version }}">
   <link rel="stylesheet" href="/static/css/observatory.css?v={{ asset_version }}">
+  <script defer src="https://analytics.kennethreitz.org/script.js" data-website-id="b3e5361e-b5d5-4097-95a6-d9d9def5378a"></script>
   <script type="module" src="/static/js/observatory.mjs?v={{ asset_version }}"></script>
 </head>
 <body class="observatory" id="top">
   <a class="skip" href="#content">Skip to content</a>
   <header class="site-header"><div class="wrap bar">
     <a class="brand" href="/">requests</a>
+    <button type="button" class="theme-toggle" id="theme-toggle">
+      <span class="theme-when-dark"><span aria-hidden="true">Light</span><span class="visually-hidden">Use light theme</span></span>
+      <span class="theme-when-light"><span aria-hidden="true">Dark</span><span class="visually-hidden">Use dark theme</span></span>
+    </button>
     <nav aria-label="Observatory"><a href="#downloads">Downloads</a><a href="#history">History</a><a href="#adoption">Project usage</a><a href="#methodology">Sources</a></nav>
   </div></header>
   <main id="content" class="wrap">
