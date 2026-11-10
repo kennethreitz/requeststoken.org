@@ -16,9 +16,11 @@
 {% macro x() -%}<a href="https://x.com/kennethreitz42" target="_blank" rel="noopener noreferrer">@kennethreitz42</a>{%- endmacro %}
 {% macro project_x() -%}<a href="https://x.com/Requests_Token" target="_blank" rel="noopener noreferrer">@Requests_Token</a>{%- endmacro %}
 {% macro social_meta() -%}
-<meta name="twitter:card" content="summary">
+<meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:site" content="@Requests_Token">
 <meta name="twitter:creator" content="@kennethreitz42">
+<meta name="twitter:image" content="https://requeststoken.org/static/img/og.png">
+<meta name="twitter:image:alt" content="$requests, the community token named for the Requests Python library.">
 {%- endmacro %}
 {% macro same_as() -%}
 <script type="application/ld+json">{{ '{"@context":"https://schema.org","@type":"WebSite","name":"requeststoken.org","url":"https://requeststoken.org/","sameAs":["https://x.com/Requests_Token","https://x.com/kennethreitz42"]}'|safe }}</script>

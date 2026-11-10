@@ -16,15 +16,24 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}requests — requeststoken.org{% endblock %}</title>
   <meta name="description" content="{% block description %}An honest home for the $requests community token: what it is for, the lock proof, safety notes, and the community. Not financial advice.{% endblock %}">
-  <meta name="theme-color" content="#0f1311">
+  <meta name="color-scheme" content="dark light">
+  <meta name="theme-color" content="#101614" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#f7f3ea" media="(prefers-color-scheme: light)">
   <link rel="canonical" href="https://requeststoken.org{% block path %}/{% endblock %}">
   {{ icons(asset_version) }}
+  <meta property="og:site_name" content="requeststoken.org">
   <meta property="og:title" content="{{ self.title() }}">
   <meta property="og:description" content="{{ self.description() }}">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://requeststoken.org{{ self.path() }}">
+  <meta property="og:image" content="https://requeststoken.org/static/img/og.png">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="$requests, the community token named for the Requests Python library.">
   {{ social_meta() }}
   {{ same_as() }}
+  <script src="/static/js/theme.js?v={{ asset_version }}"></script>
   <link rel="preload" href="/static/fonts/outfit-normal-400.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/static/css/rt.css?v={{ asset_version }}">
   <script defer src="https://analytics.kennethreitz.org/script.js" data-website-id="b3e5361e-b5d5-4097-95a6-d9d9def5378a"></script>
@@ -44,6 +53,10 @@
           <li><a class="nav-obs" href="/observatory"><span class="nav-dot" aria-hidden="true"></span>Observatory</a></li>
         </ul>
       </nav>
+      <button type="button" class="theme-toggle" id="theme-toggle">
+        <span class="theme-when-dark"><span aria-hidden="true">Light</span><span class="visually-hidden">Use light theme</span></span>
+        <span class="theme-when-light"><span aria-hidden="true">Dark</span><span class="visually-hidden">Use dark theme</span></span>
+      </button>
     </div>
   </header>
 

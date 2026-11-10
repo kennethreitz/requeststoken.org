@@ -6,10 +6,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>API — requeststoken.org</title>
   <meta name="description" content="Read-only JSON endpoints used by requeststoken.org, with an OpenAPI schema.">
-  <meta name="theme-color" content="#101410">
+  <meta name="color-scheme" content="dark light">
+  <meta name="theme-color" content="#101614" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#f7f3ea" media="(prefers-color-scheme: light)">
   <link rel="canonical" href="https://requeststoken.org/api">
-  {{ social_meta() }}
   {{ icons(asset_version) }}
+  <meta property="og:site_name" content="requeststoken.org">
+  <meta property="og:title" content="API — requeststoken.org">
+  <meta property="og:description" content="Read-only JSON endpoints used by requeststoken.org, with an OpenAPI schema.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://requeststoken.org/api">
+  <meta property="og:image" content="https://requeststoken.org/static/img/og.png">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="$requests, the community token named for the Requests Python library.">
+  {{ social_meta() }}
   <link rel="stylesheet" href="/static/css/site.css?v={{ asset_version }}">
   <link rel="stylesheet" href="/static/css/observatory.css?v={{ asset_version }}">
 </head>
