@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "_macros.html" import pagehead, x, ext %}
+{% from "_macros.html" import pagehead, x, project_x, ext %}
 {% block title %}Community — requeststoken.org{% endblock %}
 {% block path %}/community{% endblock %}
 {% block description %}Kenneth’s five community rules, the $requests group chat on X, the read-only Telegram group, and how you can help.{% endblock %}
@@ -39,7 +39,7 @@
         <li>Kenneth will never DM you first. Anyone who does, claiming to be him, is an imposter.</li>
         <li>Nobody official will ask for your wallet, or for bot or admin access.</li>
         <li>Nobody official will ask you for money for a DexScreener or Telegram boost. Real DexScreener profile updates are paid directly to DexScreener.</li>
-        <li>Nobody else speaks for $requests or runs accounts for it, and nobody official promotes other tokens.</li>
+        <li>Only @Requests_Token and @kennethreitz42 speak for $requests, and nobody official promotes other tokens.</li>
       </ul>
     </div>
   </div>
@@ -49,7 +49,7 @@
   <div class="shell">
     <h2 id="help-title">How you can help <a class="anchor" href="#help" aria-label="Link to this section">#</a></h2>
     <ul class="cards cards-plain">
-      <li class="card"><span class="card-title">Share</span><span class="card-text">Share Kenneth’s posts from {{ x() }}.</span></li>
+      <li class="card"><span class="card-title">Share</span><span class="card-text">Share posts from {{ project_x() }}, and Kenneth’s posts from {{ x() }}.</span></li>
       <li class="card"><span class="card-title">Explain</span><span class="card-text">Explain Requests to a friend.</span></li>
       <li class="card"><span class="card-title">Kindness</span><span class="card-text">Be kind.</span></li>
       <li class="card"><span class="card-title">Report</span><span class="card-text">Report imposters.</span></li>

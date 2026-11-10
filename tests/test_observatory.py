@@ -164,7 +164,7 @@ def test_routes_render_directory_and_preserve_existing_stats_contract(redis_stor
     assert "Historically used in the official Python SDK" in text
     assert "A realtime event feed is not connected" in text
     assert "120 reviewed projects" in text
-    assert 'src="/static/js/observatory.mjs"' in text
+    assert 'src="/static/js/observatory.mjs?v=' in text
     assert "script-src 'self'" in response.headers["content-security-policy"]
     stats = api.requests.get("/api/observatory")
     assert stats.status_code == 200 and stats.json()["snapshot"]["rawTotal"] == 300

@@ -10,7 +10,7 @@ from datetime import datetime, timezone
 import httpx
 
 from requeststoken.config import CONTRACT, DEX_API, PYPI_OVERALL, PYPI_RECENT
-from requeststoken.data import ManualClock, Services, TtlCache
+from requeststoken.data import ManualClock, Services, TtlCache, ohlcv_url
 from requeststoken.web import create_app
 
 PAIR = {
@@ -181,6 +181,435 @@ def test_token_endpoint_rejects_a_mismatched_first_pair():
     assert "does not match" in body["detail"]
 
 
+POOL = "6Bs7VnSBJPjKjYG7FLfRd1KXEKRB92s7MaxNngC9M9Bh"
+SOL = "So11111111111111111111111111111111111111112"
+HOUR = ohlcv_url(POOL, "hour")
+DAY = ohlcv_url(POOL, "day")
+
+
+def _near(actual, expected):
+    assert abs(actual - expected) < 1e-12
+
+
+def _pair_book(address):
+    copied = json.loads(json.dumps(PAIR))
+    copied["pairAddress"] = address
+    return {"pairs": [copied, {"pairAddress": "9" * 40, "baseToken": {"address": "not-this-token"}}]}
+
+
+def _gecko(rows, base=CONTRACT, quote=SOL):
+    return {
+        "data": {"attributes": {"ohlcv_list": rows}},
+        "meta": {
+            "base": {"address": base, "symbol": "requests"},
+            "quote": {"address": quote, "symbol": "SOL"},
+        },
+    }
+
+
+CANDLES = [
+    [1794067200, 0.000046, 0.000047, 0.000045, 0.0000465, 12.5],
+    [1794063600, 0.000044, 0.000045, 0.000043, 0.000044, 8],
+    ["nope", 1, 1, 1, 1, 1],
+    [1794060000, 0, 1, 1, 1, 1],
+]
+
+
+def test_candles_use_the_first_pair_and_sort_ohlc():
+    api, client = build({
+        DEX_API: [FakeResponse(_pair_book(POOL))],
+        HOUR: [FakeResponse(_gecko(CANDLES))],
+    })
+    response = api.requests.get("/api/candles")
+    assert response.status_code == 200
+    assert response.headers["content-type"].startswith("application/json")
+    assert response.headers["cache-control"] == "public, max-age=60"
+    body = response.json()
+    assert body["available"] is True
+    assert body["stale"] is False
+    assert body["source"] == "geckoterminal"
+    assert body["contract"] == CONTRACT
+    assert body["pair_address"] == POOL
+    assert body["timeframe"] == "1h"
+    assert body["timeframe_label"] == "1H"
+    assert body["currency"] == "usd"
+    assert body["chart_url"] == "https://www.geckoterminal.com/solana/pools/" + POOL
+    assert [row["time"] for row in body["candles"]] == [1794063600, 1794067200]
+    _near(body["candles"][0]["open"], 0.000044)
+    _near(body["candles"][1]["close"], 0.0000465)
+    assert body["candles"][1]["volume"] == 12.5
+    assert client.calls[0]["url"] == DEX_API
+    gecko = client.calls[1]
+    assert gecko["url"] == HOUR
+    assert gecko["params"]["aggregate"] == 1
+    assert gecko["params"]["limit"] == 168
+    assert gecko["params"]["currency"] == "usd"
+    assert gecko["params"]["token"] == "base"
+    assert gecko["headers"]["Accept"] == "application/json;version=20230203"
+    assert "9" * 40 not in gecko["url"]
+
+
+def test_four_hour_and_daily_candles_pick_their_aggregate():
+    api, client = build({
+        DEX_API: [FakeResponse(_pair_book(POOL)), FakeResponse(_pair_book(POOL))],
+        HOUR: [FakeResponse(_gecko(CANDLES))],
+        DAY: [FakeResponse(_gecko(CANDLES))],
+    })
+    four = api.requests.get("/api/candles?timeframe=4H").json()
+    assert four["timeframe"] == "4h"
+    assert four["timeframe_label"] == "4H"
+    assert client.calls[1]["params"]["aggregate"] == 4
+    assert client.calls[1]["params"]["limit"] == 180
+    daily = api.requests.get("/api/candles?timeframe=1d").json()
+    assert daily["timeframe"] == "1d"
+    assert client.calls[-1]["url"] == DAY
+    assert client.calls[-1]["params"]["aggregate"] == 1
+
+
+def test_candles_cache_then_serve_stale_then_retry():
+    clock = ManualClock()
+    api, client = build({
+        DEX_API: [
+            FakeResponse(_pair_book(POOL)),
+            RuntimeError("dex"),
+            FakeResponse(_pair_book(POOL)),
+        ],
+        HOUR: [
+            FakeResponse(_gecko(CANDLES)),
+            RuntimeError("gecko"),
+            FakeResponse(_gecko(CANDLES)),
+        ],
+    }, clock=clock)
+    first = api.requests.get("/api/candles?timeframe=1h").json()
+    second = api.requests.get("/api/candles?timeframe=1h").json()
+    assert second["candles"] == first["candles"]
+    assert len(client.calls) == 2
+
+    clock.advance(30)
+    cached = api.requests.get("/api/candles?timeframe=1h").json()
+    assert cached["stale"] is False
+    assert cached["candles"] == first["candles"]
+    assert len(client.calls) == 2
+
+    clock.advance(31)
+    stale = api.requests.get("/api/candles?timeframe=1h").json()
+    assert stale["available"] is True
+    assert stale["stale"] is True
+    assert stale["candles"][0]["time"] == first["candles"][0]["time"]
+    assert "last saved candles" in stale["detail"]
+    assert len(client.calls) == 4
+
+    clock.advance(10)
+    api.requests.get("/api/candles?timeframe=1h")
+    assert len(client.calls) == 4
+
+    clock.advance(46)
+    fresh = api.requests.get("/api/candles?timeframe=1h").json()
+    assert fresh["stale"] is False
+    assert len(client.calls) == 6
+
+
+def test_candles_fail_closed_without_calling_gecko_for_a_bad_pair_or_timeframe():
+    api, client = build({DEX_API: [FakeResponse(DEX)]})
+    response = api.requests.get("/api/candles?timeframe=1h")
+    missing = response.json()
+    assert missing["available"] is False
+    assert missing["candles"] == []
+    assert response.headers["cache-control"] == "public, max-age=15"
+    assert "temporarily unavailable" in missing["detail"]
+    assert all("geckoterminal" not in call["url"] for call in client.calls)
+
+    unknown, quiet = build({})
+    body = unknown.requests.get("/api/candles?timeframe=15m").json()
+    assert body["available"] is False
+    assert body["timeframe"] is None
+    assert body["candles"] == []
+    assert quiet.calls == []
+
+
+def test_candles_price_the_quote_side_when_that_side_is_the_token():
+    inverted = _gecko(CANDLES, base=SOL, quote=CONTRACT)
+    api, client = build({
+        DEX_API: [FakeResponse(_pair_book(POOL))],
+        HOUR: [FakeResponse(inverted), FakeResponse(inverted)],
+    })
+    body = api.requests.get("/api/candles?timeframe=1h").json()
+    assert body["available"] is True
+    assert body["pair_address"] == POOL
+    gecko = [call for call in client.calls if call["url"] == HOUR]
+    assert [call["params"]["token"] for call in gecko] == ["base", "quote"]
+
+
+def test_candles_reject_a_pool_that_does_not_contain_the_token():
+    foreign = _gecko(CANDLES, base=SOL, quote="not-this-token")
+    api, client = build({
+        DEX_API: [FakeResponse(_pair_book(POOL))],
+        HOUR: [FakeResponse(foreign), FakeResponse(foreign)],
+    })
+    body = api.requests.get("/api/candles").json()
+    assert body["available"] is False
+    assert body["candles"] == []
+    gecko = [call for call in client.calls if call["url"] == HOUR]
+    assert len(gecko) == 1
+
+
+def test_candles_empty_or_rate_limited_reads_do_not_invent_rows():
+    api, client = build({
+        DEX_API: [FakeResponse(_pair_book(POOL))],
+        HOUR: [FakeResponse(_gecko([]))],
+    })
+    empty = api.requests.get("/api/candles").json()
+    assert empty["available"] is False
+    assert empty["candles"] == []
+
+    limited, _calls = build({
+        DEX_API: [FakeResponse(_pair_book(POOL))],
+        HOUR: [FakeResponse({}, status_code=429)],
+    })
+    blocked = limited.requests.get("/api/candles").json()
+    assert blocked["available"] is False
+    assert "429" not in (blocked["detail"] or "")
+    assert "temporarily unavailable" in blocked["detail"]
+    assert client.calls[0]["url"] == DEX_API
+
+
+def test_candles_disk_cache_survives_a_later_outage(tmp_path):
+    disk = tmp_path / "cache.json"
+    clock = ManualClock()
+    api, _client = build({
+        DEX_API: [FakeResponse(_pair_book(POOL))],
+        HOUR: [FakeResponse(_gecko(CANDLES))],
+    }, clock=clock, disk=disk)
+    assert api.requests.get("/api/candles").json()["available"] is True
+
+    later, _client = build({
+        DEX_API: [RuntimeError("down")],
+        HOUR: [RuntimeError("down")],
+    }, clock=clock, disk=disk)
+    body = later.requests.get("/api/candles").json()
+    assert body["available"] is True
+    assert body["stale"] is True
+    assert body["pair_address"] == POOL
+    assert body["candles"][1]["volume"] == 12.5
+
+
+def test_market_chart_keeps_the_stats():
+    api, _client = build({DEX_API: [FakeResponse(DEX)]})
+    response = api.requests.get("/")
+    html = response.text
+    for stat in ("stat-mcap", "stat-price", "stat-change", "stat-liquidity", "stat-volume", "stat-activity"):
+        assert f'id="{stat}"' in html
+    assert 'id="market-chart"' in html
+    assert 'id="market-chart-live"' in html
+    ranges = [html.index(f'data-candle="{size}"') for size in ("1m", "1h", "4h", "1d", "7d")]
+    assert ranges == sorted(ranges)
+    assert 'class="chart-range is-on" data-candle="1h"' in html
+    assert "lightweight-charts.standalone.production.js" in html
+    assert "/static/js/market-chart.js" in html
+    assert 'id="chart"' not in html
+    market = html.split('id="market"', 1)[1].split('id="start-title"', 1)[0]
+    assert "financial advice" not in market.lower()
+    assert "creator of the token" not in market.lower()
+    policy = response.headers["content-security-policy"]
+    assert "style-src 'self' 'unsafe-inline'" in policy
+    assert "script-src 'self'" in policy
+    assert "script-src 'unsafe-inline'" not in policy
+
+
+def test_homepage_puts_the_market_under_the_hero():
+    import pathlib
+    home = pathlib.Path("templates/home.html").read_text()
+    order = [
+        'id="support"',
+        'id="hero"',
+        'id="market"',
+        'id="start-title"',
+        'id="intentions"',
+        'id="disclaimer"',
+    ]
+    indexes = [home.index(token) for token in order]
+    assert indexes == sorted(indexes)
+    assert "The pair, right now" in home
+    assert home.index("The pair, right now") < home.index("Start here")
+    assert home.index("Start here") < home.index("What the coin is for")
+    # In-page anchors still point at the sections they name. The masthead
+    # stays a list of site pages, not a table of contents for this page.
+    base = pathlib.Path("templates/base.html").read_text()
+    nav = [
+        '("community", "/community", "Community")',
+        '("faq", "/faq", "FAQ")',
+        '("safety", "/safety", "Safety")',
+        '("updates", "/updates", "Updates")',
+        '("library", "/library", "Requests")',
+        '("projects", "/projects", "Projects")',
+        '("about", "/about", "About")',
+        '("press", "/press", "Press")',
+    ]
+    nav_at = [base.index(item) for item in nav]
+    assert nav_at == sorted(nav_at)
+    assert 'href="#market"' in home and 'href="#lock"' in home and 'href="#intentions"' in home
+
+
+def test_one_minute_candles_are_cached_briefly_and_shared():
+    clock = ManualClock()
+    minute = ohlcv_url(POOL, "minute")
+    api, client = build({
+        DEX_API: [FakeResponse(_pair_book(POOL))],
+        minute: [FakeResponse(_gecko(CANDLES)), FakeResponse(_gecko(CANDLES))],
+    }, clock=clock)
+    first = api.requests.get("/api/candles?timeframe=1m")
+    assert first.status_code == 200
+    assert first.headers["cache-control"] == "public, max-age=18"
+    body = first.json()
+    assert body["available"] is True
+    assert body["timeframe"] == "1m"
+    assert body["timeframe_label"] == "1m"
+    assert [row["time"] for row in body["candles"]] == [1794063600, 1794067200]
+    gecko = [call for call in client.calls if call["url"] == minute]
+    assert len(gecko) == 1
+    assert gecko[0]["params"]["aggregate"] == 1
+    assert gecko[0]["params"]["limit"] == 240
+    assert gecko[0]["params"]["currency"] == "usd"
+    assert gecko[0]["params"]["token"] == "base"
+
+    clock.advance(10)
+    again = api.requests.get("/api/candles?timeframe=1M").json()
+    assert again["candles"] == body["candles"]
+    assert len([call for call in client.calls if call["url"] == minute]) == 1
+
+    clock.advance(9)
+    refreshed = api.requests.get("/api/candles?timeframe=1m").json()
+    assert refreshed["stale"] is False
+    assert refreshed["available"] is True
+    assert len([call for call in client.calls if call["url"] == minute]) == 2
+
+
+LATEST = 1794067200
+WEEK = [
+    [LATEST - 8 * 24 * 3600, 0.00004, 0.000041, 0.000039, 0.00004, 1],
+    [LATEST - 7 * 24 * 3600, 0.000042, 0.000043, 0.000041, 0.000042, 2],
+    [LATEST - 3 * 24 * 3600, 0.000044, 0.000045, 0.000043, 0.000044, 8],
+    [LATEST, 0.000046, 0.000047, 0.000045, 0.0000465, 12.5],
+]
+
+
+def test_seven_day_window_reuses_the_hourly_cache():
+    api, client = build({
+        DEX_API: [FakeResponse(_pair_book(POOL))],
+        HOUR: [FakeResponse(_gecko(WEEK))],
+    })
+    hourly = api.requests.get("/api/candles?timeframe=1h")
+    assert hourly.headers["cache-control"] == "public, max-age=60"
+    hourly = hourly.json()
+    week = api.requests.get("/api/candles?timeframe=7D")
+    assert week.headers["cache-control"] == "public, max-age=60"
+    week = week.json()
+    assert [row["time"] for row in hourly["candles"]] == [row[0] for row in sorted(WEEK)]
+    assert [row["time"] for row in week["candles"]] == [
+        LATEST - 7 * 24 * 3600,
+        LATEST - 3 * 24 * 3600,
+        LATEST,
+    ]
+    assert week["timeframe"] == "7d"
+    assert week["timeframe_label"] == "7D"
+    assert week["pair_address"] == POOL
+    assert week["stale"] is False
+    gecko = [call for call in client.calls if "geckoterminal" in call["url"]]
+    assert len(gecko) == 1
+    assert gecko[0]["url"] == HOUR
+    assert gecko[0]["params"]["aggregate"] == 1
+    again = api.requests.get("/api/candles?timeframe=1h").json()
+    assert again["timeframe"] == "1h"
+    assert len(again["candles"]) == 4
+    assert len([call for call in client.calls if "geckoterminal" in call["url"]]) == 1
+
+
+def test_seven_day_comes_from_the_hourly_series_when_asked_first(tmp_path):
+    disk = tmp_path / "cache.json"
+    clock = ManualClock()
+    api, client = build({
+        DEX_API: [FakeResponse(_pair_book(POOL)), RuntimeError("dex")],
+        HOUR: [FakeResponse(_gecko(WEEK)), RuntimeError("gecko")],
+    }, clock=clock, disk=disk)
+    first = api.requests.get("/api/candles?timeframe=7d").json()
+    assert first["available"] is True
+    assert first["timeframe"] == "7d"
+    assert len(first["candles"]) == 3
+    saved = json.loads(disk.read_text())
+    assert set(saved) >= {"ohlcv:1h"}
+    assert "ohlcv:7d" not in saved
+    assert saved["ohlcv:1h"]["timeframe"] == "1h"
+
+    clock.advance(61)
+    stale = api.requests.get("/api/candles?timeframe=7d").json()
+    assert stale["available"] is True
+    assert stale["stale"] is True
+    assert stale["timeframe"] == "7d"
+    assert stale["candles"][0]["time"] == first["candles"][0]["time"]
+    assert "last saved candles" in stale["detail"]
+    assert len([call for call in client.calls if call["url"] == HOUR]) == 2
+
+
+def test_timeframes_share_one_upstream_read_each():
+    minute = ohlcv_url(POOL, "minute")
+    api, client = build({
+        DEX_API: [FakeResponse(_pair_book(POOL))],
+        minute: [FakeResponse(_gecko(CANDLES))],
+        HOUR: [FakeResponse(_gecko(WEEK)), FakeResponse(_gecko(CANDLES))],
+        DAY: [FakeResponse(_gecko(CANDLES))],
+    })
+    for size in ("1m", "1h", "4h", "1d", "7d", "1h", "7d", "1m"):
+        body = api.requests.get("/api/candles?timeframe=" + size).json()
+        assert body["available"] is True
+        assert body["timeframe"] == size
+    gecko = [call for call in client.calls if "geckoterminal" in call["url"]]
+    assert [(call["url"], call["params"]["aggregate"]) for call in gecko] == [
+        (minute, 1),
+        (HOUR, 1),
+        (HOUR, 4),
+        (DAY, 1),
+    ]
+
+
+def test_later_candle_reads_reuse_the_side_that_priced_the_token():
+    clock = ManualClock()
+    inverted = _gecko(CANDLES, base=SOL, quote=CONTRACT)
+    api, client = build({
+        DEX_API: [FakeResponse(_pair_book(POOL)), FakeResponse(_pair_book(POOL))],
+        HOUR: [FakeResponse(inverted), FakeResponse(inverted), FakeResponse(inverted)],
+    }, clock=clock)
+    assert api.requests.get("/api/candles?timeframe=1h").json()["available"] is True
+    clock.advance(61)
+    assert api.requests.get("/api/candles?timeframe=1h").json()["available"] is True
+    gecko = [call for call in client.calls if call["url"] == HOUR]
+    assert [call["params"]["token"] for call in gecko] == ["base", "quote", "quote"]
+
+
+def test_gecko_reads_stop_after_eight_in_a_minute():
+    clock = ManualClock()
+    services = Services(client=MapClient({}), cache=TtlCache(), clock=clock, env={}, disk=None)
+    assert [services._take_gecko_budget() for _ in range(8)] == [True] * 8
+    assert services._take_gecko_budget() is False
+    clock.advance(59)
+    assert services._take_gecko_budget() is False
+    clock.advance(2)
+    assert services._take_gecko_budget() is True
+
+
+def test_market_chart_script_updates_in_place_and_pauses_when_hidden():
+    import pathlib
+    from requeststoken.config import ROOT
+    script = (ROOT / "static/js/market-chart.js").read_text()
+    assert "visibilitychange" in script
+    assert "candleSeries.update" in script
+    assert "volumeSeries.update" in script
+    assert 'POLL_MS = { "1m": 25000' in script
+    assert '"7d": 60000' in script
+    assert "clearTimeout" in script
+    home = pathlib.Path("templates/home.html").read_text()
+    assert home.index('id="hero"') < home.index('id="market"') < home.index('id="start-title"')
+
+
 def test_requests_endpoint_without_key_uses_pypistats_and_drops_mirrors():
     api, client = build({
         PYPI_RECENT: [FakeResponse(RECENT)],
@@ -222,6 +651,41 @@ def test_disk_cache_is_used_when_a_later_process_cannot_reach_upstream(tmp_path)
     assert body["available"] is True
     assert body["stale"] is True
     assert body["market_cap_usd"] == 101143
+
+
+def test_support_pitch_is_honest_and_first():
+    import pathlib
+    home = pathlib.Path("templates/home.html").read_text()
+    assert home.index('id="support"') < home.index('id="hero"')
+    assert "The work stays free." in home
+    assert "February 14, 2011" in home
+    assert "He didn’t launch this token." in home
+    assert "Creator fees help support Kenneth’s ongoing work." in home
+    assert "102.5M" in home and "Feb 14, 2027" in home
+    assert "Release 9.2.0 is current" in home
+    assert "Version 0.57.13" in home
+    assert "24-track album" in home
+    assert "April 2022" in home
+    assert "This is not an investment, and it is not financial advice." in home
+    assert "Nothing here is a promise of price, returns, or gains." in home
+    for href in (
+        "https://github.com/psf/requests",
+        "https://github.com/kennethreitz/responder",
+        "https://pytheory.org",
+        "https://kjvstudy.org",
+        "https://interpretations.kennethreitz.org",
+        "https://github.com/kennethreitz/infinite-state-sample-pack",
+    ):
+        assert f'href="{href}"' in home
+    assert "mcp-applemusic" not in home and "MCP servers" not in home
+    assert "infinitestate.com" not in home
+    lowered = home.lower()
+    assert "charity" not in lowered and "charitable" not in lowered
+    assert "The project’s official X account is {{ project_x() }}." in home
+    assert "Kenneth’s personal account is {{ x() }}." in home
+    assert "@RequestsToken (no underscore)" in home
+    assert "We’re planning to launch an official X account soon." not in home
+    assert 'rel="icon"' in pathlib.Path("templates/_macros.html").read_text()
 
 
 def test_homepage_renders_facts_figures_and_the_disclaimer():
@@ -279,7 +743,7 @@ def test_trust_strip_lock_card_and_timeline_markup():
     import pathlib
     html = site_source()
     assert "marked to confirm" not in html
-    assert 'class="trust-strip"' in html and "@kennethreitz42" in html
+    assert 'class="trust-strip"' in html and "@kennethreitz42" in html and "@Requests_Token" in html
     assert 'id="lock-progress"' in html and 'data-end="2027-02-14T05:00:00Z"' in html
     assert html.count('data-copy="') == 5
     assert "https://solscan.io/account/BaCrGRdrxHrovQjEK8D4PmjWPVCbeaZUPRKvPJ4WW5vo" in html
@@ -395,8 +859,14 @@ def test_faq_help_safety_updates_origin():
     for name in ("home", "faq", "library", "updates", "safety", "community"):
         assert pathlib.Path(f"templates/{name}.html").exists()
     assert "Is there an official $requests X account?" in html
-    assert "@RequestsToken and requeststoken.com are not his" in html
-    assert "listed on this page first" in html
+    assert "is the project’s account" in html and "Kenneth’s personal account" in html
+    assert "@RequestsToken" in html and "are not official" in html
+    assert "no underscore" in html and "requeststoken.com" in html
+    assert "We’re planning to launch an official X account soon." not in html
+    assert "There isn’t one today." not in html
+    assert "Watch this site for the announcement." not in html
+    assert "x.com/requeststoken" not in html.lower()
+    assert "listed on this page first" not in html
     assert "What’s the utility?" in html and "no web3 features are planned" in html
     assert "requests.py lived inside that project until he split it into its own repository in 2011" in html
     assert html.index('tl-year">Origin') < html.index('tl-year">2011')
@@ -437,6 +907,9 @@ def test_every_page_renders_with_nav_and_footer():
         html = response.text
         assert 'class="mainnav"' in html and 'id="links"' in html and CONTRACT in html
         assert "not financial advice" in html.lower()
+        assert 'href="https://x.com/Requests_Token"' in html
+        assert 'href="https://x.com/kennethreitz42"' in html
+        assert "Kenneth’s personal account" in html
         assert ' style="' not in html
         if path != "/":
             assert f'href="{path}" aria-current="page"' in html
@@ -448,6 +921,47 @@ def test_swirl_logo_removed():
     for f in pathlib.Path("templates").glob("*.html"):
         text = f.read_text()
         assert "M46 11c9" not in text and 'cx="49" cy="12"' not in text, f
+
+
+def test_favicon_is_served_for_every_browser():
+    import struct
+
+    api, _client = build({})
+    for path in ("/", "/observatory", "/api"):
+        html = api.requests.get(path).text
+        assert 'rel="icon" href="/favicon.ico?v=' in html, path
+        assert 'name="twitter:site" content="@Requests_Token"' in html, path
+        assert 'name="twitter:creator" content="@kennethreitz42"' in html, path
+        if path != "/api":
+            assert '"sameAs":["https://x.com/Requests_Token","https://x.com/kennethreitz42"]' in html, path
+        else:
+            assert "<script" not in html, path
+        assert 'href="/static/favicon.svg?v=' in html and 'type="image/svg+xml"' in html, path
+        assert 'href="/static/favicon-32.png?v=' in html and 'sizes="32x32"' in html, path
+        assert 'rel="apple-touch-icon" href="/apple-touch-icon.png?v=' in html, path
+
+    ico = api.requests.get("/favicon.ico")
+    assert ico.status_code == 200
+    assert ico.headers["content-type"].split(";")[0] == "image/x-icon"
+    assert ico.content[:4] == b"\x00\x00\x01\x00"
+    assert struct.unpack_from("<H", ico.content, 4)[0] == 3
+    assert ico.headers["cache-control"] == "no-cache"
+    assert b"M22.5 6.5" not in ico.content
+
+    for path, size in (("/apple-touch-icon.png", 180), ("/apple-touch-icon-precomposed.png", 180), ("/static/favicon-32.png", 32)):
+        png = api.requests.get(path)
+        assert png.status_code == 200, path
+        assert png.headers["content-type"].split(";")[0] == "image/png", path
+        assert png.content[:8] == b"\x89PNG\r\n\x1a\n"
+        assert struct.unpack(">II", png.content[16:24]) == (size, size), path
+
+    svg = api.requests.get("/static/favicon.svg")
+    assert svg.status_code == 200
+    assert svg.headers["content-type"].split(";")[0] == "image/svg+xml"
+    assert b'width="32"' in svg.content and b'height="32"' in svg.content
+    assert b"#e4c36a" in svg.content and b"#0f1311" in svg.content
+    assert b"M22.5 6.5" not in svg.content
+    assert svg.headers["cache-control"] == "no-cache"
 
 
 def test_classic_projects_listed():

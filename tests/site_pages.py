@@ -1,8 +1,8 @@
 """Helpers for the multi-page site: tests check content across all pages."""
 import pathlib
 
-PAGES = ["/", "/community", "/faq", "/safety", "/updates", "/library", "/projects", "/about"]
-TEMPLATES = ["base", "home", "community", "faq", "safety", "updates", "library", "projects", "about"]
+PAGES = ["/", "/community", "/faq", "/safety", "/updates", "/library", "/projects", "/about", "/press"]
+TEMPLATES = ["base", "home", "community", "faq", "safety", "updates", "library", "projects", "about", "press"]
 
 
 def site_source() -> str:

@@ -1,14 +1,15 @@
 # Deploy (mercury / Dokploy)
 
-Dokploy project `requeststoken.org` → compose `requeststoken-org-web` (composeId `Ez8N39E_NDdLs_VuH3uKI`, sourceType raw).
+Dokploy project `requeststoken.org` → compose `requeststoken-org-web` (composeId `Ez8N39E_NDdLs_VuH3uKI`, sourceType git).
 Domain `requeststoken.org` → service `web`, port 5042, Let's Encrypt.
 
-The image is built on the server from a git commit (no registry):
+Dokploy pulls `https://github.com/kennethreitz/requeststoken.org.git` (branch `main`)
+and runs `deploy/docker-compose.dokploy.yml`, which builds the `web` image from the
+repo's `Dockerfile` on the server. A GitHub push webhook points at Dokploy's compose
+refresh-token URL, so every push to `main` redeploys automatically. Manual redeploy:
+`compose.deploy` via the API or the Dokploy UI.
 
-    git archive --format=tar <commit> | ssh root@mercury.kennethreitz.org \
-      'rm -rf /tmp/rtbuild && mkdir /tmp/rtbuild && tar -x -C /tmp/rtbuild && docker build -t requeststoken-org:<commit> /tmp/rtbuild'
-
-Then update the image tag in the compose file (Dokploy UI or `compose.update`) and redeploy (`compose.deploy`).
+The Redis volume is the compose-scoped `redis-data` volume; it persists across deploys.
 
 ## Observatory Redis
 

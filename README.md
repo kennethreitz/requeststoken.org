@@ -81,6 +81,8 @@ binary is absent. Node is needed only for JavaScript tests, not deployment.
 
 The first object in `pairs` is the one displayed. The browser asks `/api/token` again about every 30 seconds. The server reuses a successful read for 20 seconds, and if a later read fails it keeps showing the last good one.
 
+`GET /api/candles?timeframe=1h` reads open/high/low/close and USD volume for that same pair from GeckoTerminal’s public API (no key). `timeframe` is `1m` (about four hours of one-minute candles), `1h` (default, about a week of hourly candles), `4h` (about 30 days), `1d` (daily candles), or `7d` (the last seven days of the hourly series). GeckoTerminal has no weekly candles, so `7d` is a window over the `1h` response and does not make its own upstream call. GeckoTerminal keeps roughly six months and at most 1000 candles per response, and this pool is newer than that, so the chart only goes back as far as the pair does. The keyless API is about 10 calls per minute. Every visitor shares one cached series per timeframe: about 18 seconds for `1m` and about 60 seconds for the others, with a process-wide cap of 8 GeckoTerminal reads a minute. A failed read keeps the last good candles. While a tab is visible the chart refreshes the newest candle in place, about every 25 seconds on `1m` and about once a minute otherwise, and it pauses while the tab is hidden.
+
 ## Tests
 
 ```bash
@@ -113,9 +115,11 @@ refreshes; see the [deployment handoff](deploy/README.md#observatory-redis).
 
 The official website is requeststoken.org. Since the community takeover on Oct 24, 2026, the DexScreener listing shows only requeststoken.org and @kennethreitz42.
 
-## Official account
+## Official accounts
 
-The only official account is [@kennethreitz42](https://x.com/kennethreitz42) on X. Anyone else claiming to speak for $requests is not official. Other X accounts listed on the token's DexScreener page are filtered out (`BLOCKED_HANDLES` in `requeststoken/config.py`).
+@Requests_Token (https://x.com/Requests_Token) is the project's official X account. @kennethreitz42 (https://x.com/kennethreitz42) is Kenneth's personal account. Both are official.
+
+@RequestsToken (no underscore) is not official, and requeststoken.com is not this site. Other X accounts listed on the token's DexScreener page are filtered out (`BLOCKED_HANDLES` in `requeststoken/config.py`). The blocked string is `requeststoken`, with no underscore, so it does not match @Requests_Token.
 
 There is no roadmap on this page.
 

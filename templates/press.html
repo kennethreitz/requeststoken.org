@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% from "_macros.html" import pagehead, ext %}
+{% block title %}Press kit — requeststoken.org{% endblock %}
+{% block path %}/press{% endblock %}
+{% block description %}Logos, colors, fonts, boilerplate, and official links for $requests and Kenneth Reitz.{% endblock %}
+{% block content %}
+{{ pagehead("/press", "Press kit", "Logos, colors, fonts, and wording for writing about $requests. Please use these as they are, and link back to requeststoken.org.") }}
+
+<section class="band" id="assets" aria-labelledby="assets-title">
+  <div class="shell">
+    <h2 id="assets-title" class="eyebrow">Logo and icon <a class="anchor" href="#assets" aria-label="Link to this section">#</a></h2>
+    <ul class="press-assets">
+      <li class="press-asset">
+        <div class="press-thumb"><img src="/static/press/requests-caduceus-512.png" alt="The $requests caduceus logo" width="160" height="160" loading="lazy"></div>
+        <h3>Caduceus logo</h3>
+        <p><a href="/static/press/requests-caduceus-512.png" download>PNG, 512 × 512</a> · <a href="/static/img/requests-caduceus.webp" download>WebP</a></p>
+      </li>
+      <li class="press-asset">
+        <div class="press-thumb"><img src="/static/press/requests-favicon.svg" alt="The $requests caduceus favicon" width="96" height="96" loading="lazy"></div>
+        <h3>Favicon (caduceus)</h3>
+        <p><a href="/static/press/requests-favicon.svg" download>SVG</a> · <a href="/static/press/requests-favicon-180.png" download>PNG, 180 × 180</a> · <a href="/static/favicon-32.png" download>PNG, 32 × 32</a> · <a href="/favicon.ico" download>ICO</a></p>
+      </li>
+    </ul>
+    <p class="note">Please don’t recolor, stretch, or add effects to the marks. Written out, the name is <strong>$requests</strong>, lowercase, with the dollar sign.</p>
+  </div>
+</section>
+
+<section class="band" id="colors" aria-labelledby="colors-title">
+  <div class="shell">
+    <h2 id="colors-title" class="eyebrow">Colors <a class="anchor" href="#colors" aria-label="Link to this section">#</a></h2>
+    <p class="note">The site follows your system theme. Each color lists its dark value, then its light value.</p>
+    <ul class="press-swatches">
+      <li class="press-swatch"><span class="press-chip press-chip-ground" aria-hidden="true"></span><span class="press-swatch-name">Ground</span> <code>#101614</code> <code>#f7f3ea</code><span class="note">Page background</span></li>
+      <li class="press-swatch"><span class="press-chip press-chip-raised" aria-hidden="true"></span><span class="press-swatch-name">Raised</span> <code>#212b25</code> <code>#fffdf8</code><span class="note">Panels and cards</span></li>
+      <li class="press-swatch"><span class="press-chip press-chip-ink" aria-hidden="true"></span><span class="press-swatch-name">Ink</span> <code>#f6f1e6</code> <code>#17201b</code><span class="note">Body text</span></li>
+      <li class="press-swatch"><span class="press-chip press-chip-muted" aria-hidden="true"></span><span class="press-swatch-name">Muted</span> <code>#b7ad9b</code> <code>#3e463f</code><span class="note">Secondary text</span></li>
+      <li class="press-swatch"><span class="press-chip press-chip-gold" aria-hidden="true"></span><span class="press-swatch-name">Orange</span> <code>#ff7a32</code> <code>#9a3412</code><span class="note">Accent, the $ sign</span></li>
+      <li class="press-swatch"><span class="press-chip press-chip-gold-dim" aria-hidden="true"></span><span class="press-swatch-name">Orange dim</span> <code>#c45a18</code> <code>#7c2d12</code><span class="note">Quiet accent</span></li>
+      <li class="press-swatch"><span class="press-chip press-chip-blue" aria-hidden="true"></span><span class="press-swatch-name">Blue</span> <code>#9fd4e6</code> <code>#0f5f78</code><span class="note">Links and data</span></li>
+      <li class="press-swatch"><span class="press-chip press-chip-sage" aria-hidden="true"></span><span class="press-swatch-name">Sage</span> <code>#8ed4a4</code> <code>#1f6b32</code><span class="note">Status OK</span></li>
+      <li class="press-swatch"><span class="press-chip press-chip-clay" aria-hidden="true"></span><span class="press-swatch-name">Clay</span> <code>#ff9b8a</code> <code>#9f2d1a</code><span class="note">Warnings</span></li>
+    </ul>
+    <h2 id="fonts" class="eyebrow">Fonts <a class="anchor" href="#fonts" aria-label="Link to this section">#</a></h2>
+    <ul class="press-fonts">
+      <li><span class="press-font-serif">Fraunces</span> Italic 500 and 560 for headlines. {{ ext("https://fonts.google.com/specimen/Fraunces", "Fraunces") }}, SIL Open Font License.</li>
+      <li><span class="press-font-sans">Outfit</span> 400 to 600 for body text. {{ ext("https://fonts.google.com/specimen/Outfit", "Outfit") }}, SIL Open Font License.</li>
+      <li><span class="press-font-mono">IBM Plex Mono</span> 400 and 500 for code, figures, and labels. {{ ext("https://fonts.google.com/specimen/IBM+Plex+Mono", "IBM Plex Mono") }}, SIL Open Font License.</li>
+    </ul>
+  </div>
+</section>
+
+<section class="band" id="boilerplate" aria-labelledby="boilerplate-title">
+  <div class="shell prose about-body">
+    <h2 id="boilerplate-title" class="eyebrow">Boilerplate <a class="anchor" href="#boilerplate" aria-label="Link to this section">#</a></h2>
+    <p>$requests is a community token named for Requests, the Python HTTP library. It is one way for people to support the open-source work of Kenneth Reitz: <a href="https://github.com/psf/requests" target="_blank" rel="noopener noreferrer">Requests</a>, <a href="https://github.com/kennethreitz/responder" target="_blank" rel="noopener noreferrer">Responder</a>, <a href="https://pytheory.org" target="_blank" rel="noopener noreferrer">PyTheory</a>, <a href="https://kjvstudy.org" target="_blank" rel="noopener noreferrer">kjvstudy.org</a>, and his <a href="https://github.com/kennethreitz/infinite-state-sample-pack" target="_blank" rel="noopener noreferrer">Infinite State</a> music. Kenneth didn’t create the token. Its creator fees go to his wallet, and his holding is locked; the lock is on the <a href="/">home page</a>. The work itself stays free and open source. The Requests library is a Python Software Foundation project, and this token is not.</p>
+
+    <h2 id="bio" class="eyebrow">About Kenneth Reitz <a class="anchor" href="#bio" aria-label="Link to this section">#</a></h2>
+    <p>Kenneth Reitz writes software “for humans.” He created Requests, the Python HTTP library, and Pipenv, and he wrote <em>The Hitchhiker’s Guide to Python</em>. He was formerly Python evangelist at Heroku. Today he builds Responder and makes music with code using PyTheory. <a href="/about">More about Kenneth</a>.</p>
+  </div>
+</section>
+
+<section class="band" id="official" aria-labelledby="official-title">
+  <div class="shell prose about-body">
+    <h2 id="official-title" class="eyebrow">Official links <a class="anchor" href="#official" aria-label="Link to this section">#</a></h2>
+    <ul class="foot-links">
+      <li><a href="https://requeststoken.org">requeststoken.org</a> <span class="note">the only official site for $requests</span></li>
+      <li>{{ ext("https://x.com/Requests_Token", "@Requests_Token") }} <span class="note">the project’s official X account</span></li>
+      <li>{{ ext("https://x.com/kennethreitz42", "@kennethreitz42") }} <span class="note">Kenneth’s personal account</span></li>
+      <li>{{ ext("https://kennethreitz.org", "kennethreitz.org") }} <span class="note">Kenneth’s site and essays</span></li>
+      <li>{{ ext("https://github.com/kennethreitz", "github.com/kennethreitz") }} <span class="note">Kenneth’s GitHub</span></li>
+    </ul>
+    <p><strong>@RequestsToken</strong> (no underscore) is not affiliated with this site or with Kenneth. requeststoken.com is not this site.</p>
+    <p class="fine-print">Memecoins are highly speculative. This is not financial advice. There are no promises of price, returns, or value.</p>
+  </div>
+</section>
+{% endblock %}

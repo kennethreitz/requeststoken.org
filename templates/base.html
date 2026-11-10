@@ -1,3 +1,4 @@
+{%- from "_macros.html" import icons, social_meta, same_as, x, project_x -%}
 {%- set nav = [
   ("community", "/community", "Community"),
   ("faq", "/faq", "FAQ"),
@@ -6,6 +7,7 @@
   ("library", "/library", "Requests"),
   ("projects", "/projects", "Projects"),
   ("about", "/about", "About"),
+  ("press", "/press", "Press"),
 ] -%}
 <!DOCTYPE html>
 <html lang="en">
@@ -18,7 +20,7 @@
   <meta name="theme-color" content="#101614" media="(prefers-color-scheme: dark)">
   <meta name="theme-color" content="#f7f3ea" media="(prefers-color-scheme: light)">
   <link rel="canonical" href="https://requeststoken.org{% block path %}/{% endblock %}">
-  <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+  {{ icons(asset_version) }}
   <meta property="og:site_name" content="requeststoken.org">
   <meta property="og:title" content="{{ self.title() }}">
   <meta property="og:description" content="{{ self.description() }}">
@@ -29,11 +31,8 @@
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta property="og:image:alt" content="$requests, the community token named for the Requests Python library.">
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="{{ self.title() }}">
-  <meta name="twitter:description" content="{{ self.description() }}">
-  <meta name="twitter:image" content="https://requeststoken.org/static/img/og.png">
-  <meta name="twitter:image:alt" content="$requests, the community token named for the Requests Python library.">
+  {{ social_meta() }}
+  {{ same_as() }}
   <script src="/static/js/theme.js?v={{ asset_version }}"></script>
   <link rel="preload" href="/static/fonts/outfit-normal-400.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/static/css/rt.css?v={{ asset_version }}">
@@ -70,7 +69,7 @@
       <div class="foot-grid">
         <div class="foot-intro">
           <p class="foot-mark"><span class="brand-dollar">$</span>requests</p>
-          <p>A community token named for Requests, HTTP for Humans. The only official site is requeststoken.org, and the only official account is <a href="https://x.com/kennethreitz42" target="_blank" rel="noopener noreferrer">@kennethreitz42</a>.</p>
+          <p>A community token named for Requests, HTTP for Humans. The only official site is requeststoken.org. On X, {{ project_x() }} is the project’s account and {{ x() }} is Kenneth’s personal account. Both are official.</p>
           <p class="foot-contract"><span>Contract</span> <code>{{ contract }}</code></p>
         </div>
         <div>

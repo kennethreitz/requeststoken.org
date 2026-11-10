@@ -27,6 +27,23 @@ USER_AGENT = "requeststoken.org/1.0 (+https://requeststoken.org)"
 # Successful DexScreener reads are reused for a little under the 30s poll.
 TOKEN_TTL = 20
 TOKEN_ERROR_TTL = 15
+# GeckoTerminal's keyless API is about 10 calls per minute. Every visitor
+# shares one cached series per timeframe, so client polling does not multiply
+# upstream reads. 1m stays short enough for the open candle to move. The
+# slower frames are reused for about a minute. 7d is a window on the 1h series
+# and has no TTL of its own. A process-wide cap stays under the keyless limit
+# even when every timeframe is requested together. A failed read keeps the
+# last good series.
+GECKO_API = "https://api.geckoterminal.com/api/v2"
+GECKO_ACCEPT = "application/json;version=20230203"
+OHLCV_TTL = {
+    "1m": 18,
+    "1h": 60,
+    "4h": 60,
+    "1d": 60,
+}
+OHLCV_ERROR_TTL = 45
+GECKO_MAX_PER_MINUTE = 8
 # Download totals move on a daily cadence.
 STATS_TTL = 15 * 60
 STATS_ERROR_TTL = 60
@@ -36,6 +53,16 @@ PRIMARY_LINKS = (
         "label": "This website",
         "href": "https://requeststoken.org/",
         "note": "The page you are on",
+    },
+    {
+        "label": "@Requests_Token",
+        "href": "https://x.com/Requests_Token",
+        "note": "The project's official X account",
+    },
+    {
+        "label": "@kennethreitz42",
+        "href": "https://x.com/kennethreitz42",
+        "note": "Kenneth's personal account",
     },
     {
         "label": "Source on GitHub",
@@ -93,14 +120,17 @@ PRIMARY_LINKS = (
 # them as canonical; they are labeled that way on the page.
 PROFILE_LINKS = (
     {
-        "label": "Kenneth Reitz on X",
+        "label": "@kennethreitz42",
         "href": "https://x.com/kennethreitz42",
-        "note": "Published on the token's DexScreener profile",
+        "note": "Kenneth's personal account, published on the token's DexScreener profile",
     },
 )
 
 # Accounts known to be fraudulent / not affiliated. Never shown on the site,
 # even if they appear on the DexScreener profile.
+# @RequestsToken (no underscore) is not official. @Requests_Token, with the
+# underscore, is the project account and must stay visible. The blocked
+# string has no underscore, so it does not match requests_token.
 BLOCKED_HANDLES = ("requeststoken",)
 
 

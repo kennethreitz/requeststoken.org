@@ -20,19 +20,28 @@ from requeststoken.config import (
     PUMP_PAGE,
     FOMO_PAGE,
     DEX_PAGE,
+    OHLCV_TTL,
     ROOT,
 )
-from requeststoken.data import Services, unavailable_stats, unavailable_token
+from requeststoken.data import (
+    OHLCV_FRAMES,
+    Services,
+    unavailable_candles,
+    unavailable_stats,
+    unavailable_token,
+)
 from requeststoken.observatory import DownloadObservatory, adoption_manifest
 
 logger = logging.getLogger("requeststoken")
 
 _POOL = ThreadPoolExecutor(max_workers=4, thread_name_prefix="upstream")
 
+# The chart library paints its canvas by setting element styles. Those are
+# style attributes, not scripts; script-src stays limited to this origin.
 _CSP = (
     "default-src 'self'; "
     "img-src 'self' data:; "
-    "style-src 'self'; "
+    "style-src 'self' 'unsafe-inline'; "
     "font-src 'self'; "
     "script-src 'self' https://analytics.kennethreitz.org; "
     "connect-src 'self' https://analytics.kennethreitz.org; "
@@ -55,7 +64,9 @@ class RevalidateAssets:
 
     async def __call__(self, scope, receive, send):
         path = scope.get("path", "") if scope.get("type") == "http" else ""
-        if not path.startswith("/static/") or not path.endswith((".js", ".mjs", ".css")):
+        name = path.rsplit("/", 1)[-1]
+        icon = name.startswith("favicon") or name.startswith("apple-touch-icon")
+        if not path.startswith("/static/") or not (path.endswith((".js", ".mjs", ".css")) or icon):
             return await self.app(scope, receive, send)
 
         async def wrapped(message):
@@ -70,7 +81,14 @@ class RevalidateAssets:
 
 def _asset_version() -> str:
     digest = hashlib.sha256()
-    for path in sorted((ROOT / "static" / "css").glob("*.css")) + sorted((ROOT / "static" / "js").glob("*.mjs")) + sorted((ROOT / "static" / "js").glob("*.js")):
+    paths = (
+        sorted((ROOT / "static" / "css").glob("*.css"))
+        + sorted((ROOT / "static" / "js").glob("*.mjs"))
+        + sorted((ROOT / "static" / "js").glob("*.js"))
+    )
+    for name in ("favicon.svg", "favicon.ico", "favicon-32.png", "apple-touch-icon.png"):
+        paths.append(ROOT / "static" / name)
+    for path in paths:
         digest.update(path.read_bytes())
     return digest.hexdigest()[:10]
 
@@ -160,11 +178,16 @@ def create_app(services: Services | None = None, observatory: DownloadObservator
     def about(req, resp):
         render(resp, "about", writing=load_writing())
 
-    for _slug in ("community", "faq", "safety", "updates", "projects"):
+    for _slug in ("community", "faq", "safety", "updates", "projects", "press"):
         def _page(req, resp, _slug=_slug):
             render(resp, _slug)
         _page.__name__ = f"{_slug}_page"
         api.get(f"/{_slug}", include_in_schema=False)(_page)
+
+    @api.get("/press-kit", include_in_schema=False)
+    def press_kit_redirect(req, resp):
+        resp.status_code = 301
+        resp.headers["Location"] = "/press"
 
     @api.get("/api/token", **api_schema.ROUTES["/api/token"])
     def token(req, resp):
@@ -174,6 +197,17 @@ def create_app(services: Services | None = None, observatory: DownloadObservator
             unavailable_token,
             "Market data is temporarily unavailable.",
         )
+
+    @api.get("/api/candles", **api_schema.ROUTES["/api/candles"])
+    def candles(req, resp):
+        timeframe = _candle_timeframe(req)
+        body = _section(
+            lambda: services.candles(timeframe),
+            lambda detail: unavailable_candles(detail, timeframe),
+            "Price history is temporarily unavailable.",
+        )
+        resp.headers["Cache-Control"] = _candle_cache_control(timeframe, body)
+        resp.media = body
 
     @api.get("/api/requests", **api_schema.ROUTES["/api/requests"])
     def requests_stats(req, resp):
@@ -213,6 +247,19 @@ def create_app(services: Services | None = None, observatory: DownloadObservator
         spec = api.openapi._apispec.to_dict()
         resp.render("api.html", spec=spec, asset_version=asset_version)
 
+    for route, filename, content_type in (
+        ("/favicon.ico", "favicon.ico", "image/x-icon"),
+        ("/apple-touch-icon.png", "apple-touch-icon.png", "image/png"),
+        ("/apple-touch-icon-precomposed.png", "apple-touch-icon.png", "image/png"),
+    ):
+        def _icon(req, resp, filename=filename, content_type=content_type):
+            resp.file(ROOT / "static" / filename, content_type=content_type)
+            # Favicons stick in browser caches. no-cache makes the next visit revalidate.
+            resp.headers["Cache-Control"] = "no-cache"
+
+        _icon.__name__ = "icon_" + route.strip("/").replace(".", "_").replace("-", "_")
+        api.get(route, include_in_schema=False)(_icon)
+
     return api
 
 
@@ -232,6 +279,21 @@ def lock_status(now: datetime | None = None) -> dict:
         "days_left": days_left,
         "label": f"{days_left} days to unlock" if days_left else "Unlock date reached",
     }
+
+
+def _candle_cache_control(timeframe: str, body: dict) -> str:
+    if not body.get("available"):
+        return "public, max-age=15"
+    frame = OHLCV_FRAMES.get(timeframe) or {}
+    source = frame.get("source") or timeframe
+    return f"public, max-age={int(OHLCV_TTL.get(source, 60))}"
+
+
+def _candle_timeframe(req) -> str:
+    raw = req.params.get("timeframe", "1h")
+    if isinstance(raw, (list, tuple)):
+        raw = raw[-1] if raw else "1h"
+    return str(raw or "1h").strip().lower() or "1h"
 
 
 def _section(loader, fallback, detail="Market data is temporarily unavailable."):

@@ -1,6 +1,42 @@
 {% extends "base.html" %}
-{% from "_macros.html" import x, ext %}
+{% from "_macros.html" import ext, x, project_x %}
 {% block content %}
+<section class="pitch" id="support" aria-labelledby="support-title">
+  <div class="shell">
+    <p class="kicker">For humans</p>
+    <h2 id="support-title">The work stays free. <a class="anchor" href="#support" aria-label="Link to this section">#</a></h2>
+    <div class="pitch-lead">
+      <p class="lede">Kenneth Reitz published <a href="https://github.com/psf/requests" target="_blank" rel="noopener noreferrer">Requests</a> — “HTTP for Humans” — on February 14, 2011. It is Apache-2.0. The Python Software Foundation maintains it now.</p>
+      <p>He didn’t launch this token. He is publicly involved. Creator fees help support Kenneth’s ongoing work.</p>
+    </div>
+    <p class="pitch-lock"><a href="#lock"><span>102.5M</span> of his tokens, locked until Feb 14, 2027</a></p>
+    <ul class="pitch-work" aria-label="Kenneth’s public projects">
+      <li><a href="https://github.com/psf/requests" target="_blank" rel="noopener noreferrer"><span class="work-k">Library</span><span class="work-name">Requests</span><span class="work-line">HTTP for Humans, published February 14, 2011. The PSF maintains it now. PyPI’s current release is 2.34.2.</span><span class="work-go">psf/requests</span></a></li>
+      <li><a href="https://github.com/kennethreitz/responder" target="_blank" rel="noopener noreferrer"><span class="work-k">Framework</span><span class="work-name">Responder</span><span class="work-line">An HTTP framework for Python. Release 9.2.0 is current, from July 2026. This site runs on it. A maintenance commit landed October 30.</span><span class="work-go">kennethreitz/responder</span></a></li>
+      <li><a href="https://pytheory.org" target="_blank" rel="noopener noreferrer"><span class="work-k">Music</span><span class="work-name">PyTheory</span><span class="work-line">Music theory for humans. Version 0.57.13 writes multi-part arrangements and MIDI.</span><span class="work-go">pytheory.org</span></a></li>
+      <li><a href="https://kjvstudy.org" target="_blank" rel="noopener noreferrer"><span class="work-k">Study</span><span class="work-name">kjvstudy.org</span><span class="work-line">King James study: interlinear Hebrew and Greek, Strong’s Concordance, and full-text search. Repository updated July 2026.</span><span class="work-go">kjvstudy.org</span></a></li>
+      <li><a href="https://interpretations.kennethreitz.org" target="_blank" rel="noopener noreferrer"><span class="work-k">Album</span><span class="work-name">Interpretations</span><span class="work-line">A 24-track album. Every sound is generated from Python with PyTheory.</span><span class="work-go">interpretations.kennethreitz.org</span></a></li>
+      <li><a href="https://github.com/kennethreitz/infinite-state-sample-pack" target="_blank" rel="noopener noreferrer"><span class="work-k">Samples</span><span class="work-name">Infinite State</span><span class="work-line">Open-source loops and samples under that name. The repository’s last update was April 2022.</span><span class="work-go">infinite-state-sample-pack</span></a></li>
+    </ul>
+    <div class="pitch-extras">
+      <h3 class="eyebrow">Extras: other recent projects</h3>
+      <ul class="extras-list">
+        <li><a href="https://github.com/kennethreitz/acat" target="_blank" rel="noopener noreferrer">acat</a> <span class="extras-line">cat prints files. acat plays them. Audio and video in your terminal, for humans.</span></li>
+        <li><a href="https://github.com/kennethreitz/simplemind" target="_blank" rel="noopener noreferrer">simplemind</a> <span class="extras-line">Python API client for AI providers that intends to replace LangChain and LangGraph for most common use cases.</span></li>
+        <li><a href="https://github.com/kennethreitz/fetch.py" target="_blank" rel="noopener noreferrer">fetch.py</a> <span class="extras-line">Requests energy for when the dependency is the problem.</span></li>
+        <li><a href="https://github.com/kennethreitz/noodler" target="_blank" rel="noopener noreferrer">noodler</a> <span class="extras-line">A modular music environment where theory itself is patchable. Eurorack-inspired, built in Python around PyTheory.</span></li>
+        <li><a href="https://github.com/kennethreitz/markdownland" target="_blank" rel="noopener noreferrer">markdownland</a> <span class="extras-line">Drag in a document, get it back as anything — a local-first markdown workbench (PDF, DOCX, HTML, EPUB…) on Responder + pandoc.</span></li>
+        <li><a href="https://rhymepad.org" target="_blank" rel="noopener noreferrer">rhymepad.org</a> <span class="extras-line">A writing pad for poets and rappers that color-codes end, internal, slant, and multisyllabic rhymes by sound as you type.</span></li>
+        <li><a href="https://github.com/kennethreitz/obsidian-reitz-latex" target="_blank" rel="noopener noreferrer">obsidian-reitz-latex</a> <span class="extras-line">An Obsidian theme: write like iA Writer, read like a LaTeX paper.</span></li>
+        <li><a href="https://github.com/kennethreitz/RetroVault" target="_blank" rel="noopener noreferrer">RetroVault</a> <span class="extras-line">A native macOS client for RomM.</span></li>
+        <li><a href="https://github.com/kennethreitz/pytheory-playground" target="_blank" rel="noopener noreferrer">pytheory-playground</a> <span class="extras-line">Interactive music theory toolbox powered by pytheory</span></li>
+        <li><a href="https://github.com/kennethreitz/ableton-pytheory" target="_blank" rel="noopener noreferrer">ableton-pytheory</a> <span class="extras-line">pytheory (Music Theory for Humans) inside Ableton Live — key/chord detection and progression generation, via Pyodide</span></li>
+      </ul>
+    </div>
+    <p class="pitch-note">This is not an investment, and it is not financial advice. Nothing here is a promise of price, returns, or gains.</p>
+  </div>
+</section>
+
 <section class="hero" id="hero" aria-label="$requests">
   <div class="shell hero-grid">
     <div class="hero-copy">
@@ -24,10 +60,55 @@
       <a class="hero-logo" href="https://requests.readthedocs.io/" target="_blank" rel="noopener noreferrer"><img src="/static/img/requests-caduceus.webp" width="512" height="512" alt="Requests: HTTP for Humans logo"></a>
       <ul class="trust-strip">
         <li><a href="#lock"><span class="trust-k">Locked</span> 10.7% of supply until Feb 14, 2027</a> <a class="trust-src" href="https://solscan.io/account/BaCrGRdrxHrovQjEK8D4PmjWPVCbeaZUPRKvPJ4WW5vo" target="_blank" rel="noopener noreferrer">Solscan</a></li>
-        <li><a href="https://x.com/kennethreitz42" target="_blank" rel="noopener noreferrer"><span class="trust-k">Official X</span> @kennethreitz42</a></li>
+        <li><a href="https://x.com/Requests_Token" target="_blank" rel="noopener noreferrer"><span class="trust-k">Official X</span> @Requests_Token</a></li>
+        <li><a href="https://x.com/kennethreitz42" target="_blank" rel="noopener noreferrer"><span class="trust-k">Kenneth</span> @kennethreitz42, his personal account</a></li>
         <li><span><span class="trust-k">Only site</span> requeststoken.org</span></li>
       </ul>
     </div>
+  </div>
+</section>
+
+<section class="band" id="market" aria-labelledby="market-title">
+  <div class="shell">
+    <p class="eyebrow">The market</p>
+    <h2 id="market-title">The pair, right now <a class="anchor" href="#market" aria-label="Link to this section">#</a></h2>
+    <p class="deck">Price, market cap, liquidity, volume, and 24-hour buys and sells for the contract above, from DexScreener’s public API. The candlestick chart uses that same pair. The first pair in the DexScreener response is the one shown here. Read the numbers as information about the market.</p>
+    <p id="market-unavailable" class="unavailable" {% if token.available %}hidden{% endif %}>{{ token.detail or "Market data is temporarily unavailable." }}</p>
+    <dl class="stat-grid" id="market-grid" {% if not token.available %}hidden{% endif %}>
+      <div class="stat"><dt>Market cap</dt><dd id="stat-mcap">{{ token.market_cap_display }}</dd></div>
+      <div class="stat"><dt>Price</dt><dd id="stat-price">{{ token.price_display }}</dd><p class="fine" id="stat-native">{{ token.price_native_display }}</p></div>
+      <div class="stat"><dt>24h change</dt><dd id="stat-change" class="change {{ token.change_direction }}">{{ token.change_display }}</dd></div>
+      <div class="stat"><dt>Liquidity</dt><dd id="stat-liquidity">{{ token.liquidity_display }}</dd></div>
+      <div class="stat"><dt>24h volume</dt><dd id="stat-volume">{{ token.volume_display }}</dd></div>
+      <div class="stat"><dt>Buys / sells, 24h</dt><dd id="stat-activity">{{ token.activity_display }}</dd></div>
+    </dl>
+    <div class="market-chart" id="market-chart">
+      <div class="market-chart-bar">
+        <div class="market-chart-heading">
+          <p class="market-chart-kicker" id="market-chart-kicker">Price candles</p>
+          <p class="chart-live" id="market-chart-live" hidden>
+            <span class="chart-live-dot" aria-hidden="true"></span>
+            <span id="market-chart-live-text">Live</span>
+          </p>
+        </div>
+        <div class="chart-ranges" role="group" aria-label="Candle size">
+          <button type="button" class="chart-range" data-candle="1m" aria-pressed="false">1m</button>
+          <button type="button" class="chart-range is-on" data-candle="1h" aria-pressed="true">1H</button>
+          <button type="button" class="chart-range" data-candle="4h" aria-pressed="false">4H</button>
+          <button type="button" class="chart-range" data-candle="1d" aria-pressed="false">1D</button>
+          <button type="button" class="chart-range" data-candle="7d" aria-pressed="false">7D</button>
+        </div>
+      </div>
+      <p class="chart-legend" id="market-chart-legend" hidden></p>
+      <div id="market-chart-canvas" class="market-chart-canvas" hidden></div>
+      <p id="market-chart-message" class="chart-message">Price history loads in the browser.</p>
+      <p class="chart-note" id="market-chart-note" hidden></p>
+      <p class="fine chart-source">Candles for this pair, from <a id="market-chart-link" href="https://www.geckoterminal.com/" target="_blank" rel="noopener noreferrer">GeckoTerminal</a>. Bars along the bottom are volume in US dollars. Chart by <a href="https://www.tradingview.com/" target="_blank" rel="noopener noreferrer">TradingView</a>.</p>
+    </div>
+    <p class="pair-line"><a id="pair-link" href="{{ token.pair_url }}" target="_blank" rel="noopener noreferrer">View the pair on DexScreener</a> <span id="listed-on">{% if token.listed_on %}Pair listed {{ token.listed_on }}.{% endif %}</span></p>
+    <p class="pair-line" id="holders-line">Holder concentration: the 10 largest token accounts hold 42.0% of supply, including the PumpSwap pool (13.3%) and Kenneth’s lock escrow (10.7%); the other eight hold 18.0%. 388 accounts hold a balance. Source: Solana mainnet RPC, Token-2022 accounts for this mint, Oct 25, 2026 at 10:18 AM ET.</p>
+    <p class="pair-line" id="fomo-line">Also trade and follow on <a href="{{ fomo_page }}" target="_blank" rel="noopener noreferrer">fomo</a>.</p>
+    <p class="status" id="market-status">{{ token.status_display }}</p>
   </div>
 </section>
 
@@ -37,7 +118,7 @@
     <ul class="cards">
       <li><a class="card" href="/community"><span class="card-path">/community</span><span class="card-title">Community</span><span class="card-text">Five rules, the group chat on X, and how you can help.</span></a></li>
       <li><a class="card" href="/safety"><span class="card-path">/safety</span><span class="card-title">Safety</span><span class="card-text">Imposters, fake boosts, and the only official links.</span></a></li>
-      <li><a class="card" href="/faq"><span class="card-path">/faq</span><span class="card-title">FAQ</span><span class="card-text">The official account, the utility, and what’s next.</span></a></li>
+      <li><a class="card" href="/faq"><span class="card-path">/faq</span><span class="card-title">FAQ</span><span class="card-text">The official accounts, the utility, and what’s next.</span></a></li>
       <li><a class="card" href="/library"><span class="card-path">/library</span><span class="card-title">Requests</span><span class="card-text">The library, its history, and its download counts.</span></a></li>
       <li><a class="card" href="/about"><span class="card-path">/about</span><span class="card-title">About Kenneth</span><span class="card-text">Who he is, what’s been written about him, and his talks.</span></a></li>
       <li><a class="card" href="/updates"><span class="card-path">/updates</span><span class="card-title">Updates</span><span class="card-text">A short, dated record of what has changed.</span></a></li>
@@ -65,7 +146,7 @@
       </div>
       <p class="fees" id="fees">Creator fees from trading go to Kenneth Reitz. He uses them in two ways: buying more $requests, and supporting his growing family (for example, his wife needs a new car). This is a plain disclosure, not a promise of buybacks, price support, or returns.</p>
       <p>The official website is requeststoken.org. Since the community takeover on Oct 24, 2026, the DexScreener listing shows only requeststoken.org and @kennethreitz42.</p>
-      <p>The only official account is {{ x() }} on X. Anyone else claiming to speak for $requests is not official.</p>
+      <p>The project’s official X account is {{ project_x() }}. Kenneth’s personal account is {{ x() }}. Both are official. Anyone else claiming to speak for $requests is not official, including @RequestsToken (no underscore). requeststoken.com is not this site.</p>
     </div>
     <aside class="lock-card" id="lock" aria-labelledby="lock-title">
       <p class="lock-kicker">Lock proof · Streamflow</p>
@@ -86,27 +167,6 @@
   </div>
 </section>
 
-<section class="band" id="market" aria-labelledby="market-title">
-  <div class="shell">
-    <p class="eyebrow">The market</p>
-    <h2 id="market-title">The pair, right now <a class="anchor" href="#market" aria-label="Link to this section">#</a></h2>
-    <p class="deck">Price, market cap, liquidity, volume, and 24-hour buys and sells for the contract above, from DexScreener’s public API. The first pair in that response is the one shown here. Read the numbers as information about the market.</p>
-    <p id="market-unavailable" class="unavailable" {% if token.available %}hidden{% endif %}>{{ token.detail or "Market data is temporarily unavailable." }}</p>
-    <dl class="stat-grid" id="market-grid" {% if not token.available %}hidden{% endif %}>
-      <div class="stat"><dt>Market cap</dt><dd id="stat-mcap">{{ token.market_cap_display }}</dd></div>
-      <div class="stat"><dt>Price</dt><dd id="stat-price">{{ token.price_display }}</dd><p class="fine" id="stat-native">{{ token.price_native_display }}</p></div>
-      <div class="stat"><dt>24h change</dt><dd id="stat-change" class="change {{ token.change_direction }}">{{ token.change_display }}</dd></div>
-      <div class="stat"><dt>Liquidity</dt><dd id="stat-liquidity">{{ token.liquidity_display }}</dd></div>
-      <div class="stat"><dt>24h volume</dt><dd id="stat-volume">{{ token.volume_display }}</dd></div>
-      <div class="stat"><dt>Buys / sells, 24h</dt><dd id="stat-activity">{{ token.activity_display }}</dd></div>
-    </dl>
-    <p class="pair-line"><a id="pair-link" href="{{ token.pair_url }}" target="_blank" rel="noopener noreferrer">View the pair on DexScreener</a> <span id="listed-on">{% if token.listed_on %}Pair listed {{ token.listed_on }}.{% endif %}</span></p>
-    <p class="pair-line" id="holders-line">Holder concentration: the 10 largest token accounts hold 42.0% of supply, including the PumpSwap pool (13.3%) and Kenneth’s lock escrow (10.7%); the other eight hold 18.0%. 388 accounts hold a balance. Source: Solana mainnet RPC, Token-2022 accounts for this mint, Oct 25, 2026 at 10:18 AM ET.</p>
-    <p class="pair-line" id="fomo-line">Also trade and follow on <a href="{{ fomo_page }}" target="_blank" rel="noopener noreferrer">fomo</a>.</p>
-    <p class="status" id="market-status">{{ token.status_display }}</p>
-  </div>
-</section>
-
 <section class="band disclaimer" id="disclaimer" aria-labelledby="disclaimer-title">
   <div class="shell prose">
     <p class="eyebrow">Disclaimer</p>
@@ -116,4 +176,8 @@
   </div>
 </section>
 {% endblock %}
-{% block scripts %}<script src="/static/js/site.js?v={{ asset_version }}"></script>{% endblock %}
+{% block scripts %}
+<script src="/static/js/lightweight-charts.standalone.production.js?v={{ asset_version }}"></script>
+<script src="/static/js/market-chart.js?v={{ asset_version }}"></script>
+<script src="/static/js/site.js?v={{ asset_version }}"></script>
+{% endblock %}
